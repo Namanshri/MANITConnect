@@ -1,5 +1,11 @@
 /* TOGGLE BETWEEN JOURNEY & GUIDANCE*/
 
+ const BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000"
+        : "https://manitconnnect-2.onrender.com";  
+        
 const journeyBtn = document.getElementById("journeyBtn");
 
 const guidanceBtn = document.getElementById("guidanceBtn");
@@ -8,9 +14,12 @@ const journeySection = document.getElementById("journeySection");
 
 const guidanceSection = document.getElementById("guidanceSection");
 
-journeySection.style.display = "block";
+if (journeySection && guidanceSection) {
 
-guidanceSection.style.display = "none";
+    journeySection.style.display = "block";
+    guidanceSection.style.display = "none";
+
+}
 
 journeyBtn.addEventListener("click", () => {
 
@@ -39,51 +48,11 @@ guidanceBtn.addEventListener("click", () => {
 
 /* VIDEO PREVIEW */
 
-const uploadButtons = document.querySelectorAll(".video-btn");
-
-uploadButtons.forEach((button) => {
-
-    button.addEventListener("click", () => {
-
-        button.nextElementSibling.click();
-
-    });
-
-});
-
-
-const hiddenInputs = document.querySelectorAll(".hidden-video");
-
-hiddenInputs.forEach((input) => {
-
-    input.addEventListener("change", (e) => {
-
-        const file = e.target.files[0];
-
-        if (!file) return;
-
-        const video = input.parentElement.nextElementSibling;
-
-        video.src = URL.createObjectURL(file);
-
-        video.style.display = "block";
-
-    });
-
-});
-
+// Video preview handled using event delegation below.
 
 /* MENTOR ID */
 
-const mentorId = sessionStorage.getItem("mentor_id");
-
-if (!mentorId) {
-
-    alert("Mentor not found.");
-
-    window.location.href = "contribute1.html";
-
-}
+const user_id = localStorage.getItem("user_id");
 
 
 /* YEAR BUTTONS */
@@ -92,21 +61,19 @@ const yearButtons=document.querySelectorAll(".year-btn");
 
 const guidanceContent=document.getElementById("guidanceContent");
 
-let currentYear=1;
+yearButtons.forEach(button => {
 
-yearButtons.forEach(button=>{
+    button.addEventListener("click", () => {
 
-button.addEventListener("click",()=>{
+        yearButtons.forEach(btn => btn.classList.remove("active-year"));
 
-yearButtons.forEach(btn=>btn.classList.remove("active-year"));
+        button.classList.add("active-year");
 
-button.classList.add("active-year");
+        const currentYear = Number(button.dataset.year);
 
-currentYear=Number(button.dataset.year);
+        renderGuidance(currentYear);
 
-renderGuidance(currentYear);
-
-});
+    });
 
 });
 /* RENDER GUIDANCE */
@@ -198,16 +165,12 @@ function renderGuidance(year){
                 <div class="media-row">
 
                     <button
+type="button"
+class="audio-btn">
 
-                        type="button"
+🎙️ Record Audio (Coming Soon)
 
-                        class="audio-btn"
-
-                    >
-
-                        🎙️ Record Audio
-
-                    </button>
+</button>
 
                     <button
 
@@ -217,7 +180,7 @@ function renderGuidance(year){
 
                     >
 
-                        📎 Add Video
+                        📎 Add Video (Coming Soon)
 
                     </button>
 
@@ -268,7 +231,7 @@ submitButton.addEventListener("click", async () => {
 
     const experienceData = {
 
-        mentor_id: mentorId,
+        user_id,
 
         preparation_strategy:
         document.getElementById("preparationStrategy").value,
@@ -294,11 +257,13 @@ submitButton.addEventListener("click", async () => {
 
         /*  SAVE EXPERIENCE */
 
-        const experienceResponse = await fetch(
+       
 
-            "https://manitconnnect-2.onrender.com/api/experience",
+const experienceResponse = await fetch(
 
-            {
+    `${BASE_URL}/api/experience`,
+
+    {
 
                 method:"POST",
 
@@ -334,7 +299,7 @@ submitButton.addEventListener("click", async () => {
 
             const guidanceData = {
 
-                mentor_id: mentorId,
+                user_id,
 
                 year: Number(answer.dataset.year),
 
@@ -346,31 +311,26 @@ submitButton.addEventListener("click", async () => {
 
             };
 
-            await fetch(
+           const guidanceResponse = await fetch(
+    `${BASE_URL}/api/guidance`,
+    {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(guidanceData)
+    }
+);
 
-                "https://manitconnnect-2.onrender.com/api/guidance",
-
-                {
-
-                    method:"POST",
-
-                    headers:{
-
-                        "Content-Type":"application/json"
-
-                    },
-
-                    body:JSON.stringify(guidanceData)
-
-                }
-
-            );
+if (!guidanceResponse.ok) {
+    throw new Error("Failed to save guidance.");
+}
 
         }
 
       document.getElementById("loadingOverlay").style.display="none";
 
-window.location.href = `../mentor/mentor.html?id=${mentorId}`;
+document.getElementById("successOverlay").style.display = "flex";
     }
 
     catch(error){
@@ -389,9 +349,22 @@ window.location.href = `../mentor/mentor.html?id=${mentorId}`;
 const continueSuccess =
 document.getElementById("continueSuccess");
 
-continueSuccess.addEventListener("click",()=>{
+continueSuccess.addEventListener("click", () => {
 
-    window.location.href = `../mentor/mentor.html?id=${mentorId}`;
+    window.location.href =
+    "../Dashboard/dashboard.html";
+
+});
+
+const shareAnother =
+document.getElementById("shareAnother");
+
+shareAnother.addEventListener("click", () => {
+
+    sessionStorage.clear();
+
+    window.location.href =
+    "contribute1.html";
 
 });
 
@@ -472,27 +445,12 @@ document.addEventListener("click",(e)=>{
 
 /* CLEAR TEMP DATA AFTER SUCCESS */
 
-window.addEventListener("beforeunload",()=>{
+window.addEventListener("beforeunload", () => {
 
     sessionStorage.removeItem("company");
-
     sessionStorage.removeItem("mentor_name");
+    sessionStorage.removeItem("experienceType");
 
 });
 
 
-/*  INITIALIZE PAGE */
-
-console.log(
-
-    "CampusPath Contribute Page 2 Loaded"
-
-);
-
-console.log(
-
-    "Mentor ID :",
-
-    mentorId
-
-);

@@ -6,6 +6,12 @@ const strengthText = document.getElementById("strengthText");
 
 const studentForm = document.getElementById("studentForm");
 
+const BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000"
+        : "https://manitconnnect-2.onrender.com";
+
 /* SHOW / HIDE PASSWORD */
 
 togglePassword.addEventListener("click", () => {
@@ -64,10 +70,70 @@ passwordInput.addEventListener("input", () => {
 
 /* FORM SUBMIT */
 
-studentForm.addEventListener("submit", (e) => {
+studentForm.addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
-    alert("Backend registration will be connected next.");
+    const full_name = document.getElementById("fullName").value.trim();
+
+    const email = document.getElementById("email").value.trim();
+
+    const password = passwordInput.value;
+
+    try {
+
+        const response = await fetch(
+
+            `${BASE_URL}/api/auth/register/student`,
+
+            {
+
+                method: "POST",
+
+                headers: {
+
+                    "Content-Type": "application/json"
+
+                },
+
+                body: JSON.stringify({
+
+                    full_name,
+
+                    email,
+
+                    password
+
+                })
+
+            }
+
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+            alert(data.message);
+
+            window.location.href = "login.html";
+
+        }
+
+        else {
+
+            alert(data.message);
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+        alert("Server Error");
+
+    }
 
 });

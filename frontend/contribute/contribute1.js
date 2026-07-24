@@ -1,3 +1,9 @@
+const BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000"
+        : "https://manitconnnect-2.onrender.com";
+        
 const mentorForm = document.getElementById("mentorForm");
 
 mentorForm.addEventListener("submit", async (e) => {
@@ -35,42 +41,45 @@ mentorForm.addEventListener("submit", async (e) => {
 
     }
 
-    const mentorData = {
+    const user_id = localStorage.getItem("user_id");
+    const branch = document.getElementById("branch").value.trim();
 
-        full_name: fullName,
+const experienceData = {
 
-        company: company,
+    user_id,
 
-        role: role,
+    full_name: fullName,
 
-        package_lpa: packageLPA,
+    company,
 
-        cgpa: Number(cgpa),
+    role,
 
-        experience_type: experienceType,
+    package_lpa: packageLPA,
 
-        placement_mode: placementMode
+    cgpa: Number(cgpa),
 
-    };
+    experience_type: experienceType,
+
+    placement_mode: placementMode,
+
+    branch
+
+};
 
     try {
 
-        const response = await fetch(
-            "https://manitconnnect-2.onrender.com/api/mentor",
-            {
+     
 
-                method: "POST",
-
-                headers: {
-
-                    "Content-Type": "application/json"
-
-                },
-
-                body: JSON.stringify(mentorData)
-
-            }
-        );
+const response = await fetch(
+    `${BASE_URL}/api/experience`,
+    {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(experienceData)
+    }
+);
 
         if (!response.ok) {
 
@@ -80,31 +89,9 @@ mentorForm.addEventListener("submit", async (e) => {
 
         const data = await response.json();
 
-        sessionStorage.setItem(
+       
 
-            "mentor_id",
-
-            data.mentor_id
-
-        );
-
-        sessionStorage.setItem(
-
-            "mentor_name",
-
-            fullName
-
-        );
-
-        sessionStorage.setItem(
-
-            "company",
-
-            company
-
-        );
-
-        alert("Basic details saved successfully!");
+        alert(data.message || "Basic details saved successfully!");
 
         window.location.href = "contribute2.html";
 

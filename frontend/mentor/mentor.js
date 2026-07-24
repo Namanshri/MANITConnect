@@ -1,6 +1,10 @@
 /* CAMPUSPATH MENTOR PROFILE */
 
-const BASE_URL = "https://manitconnnect-2.onrender.com";
+const BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000"
+        : "https://manitconnnect-2.onrender.com";
 
 /*  GET MENTOR ID */
 
@@ -19,7 +23,7 @@ if (!mentorId) {
     mentorId = 1;
 
 }
-console.log("Current Mentor ID:", mentorId);
+//console.log("Current Mentor ID:", mentorId);
 
 /* DOM ELEMENTS */
 
@@ -105,7 +109,7 @@ let currentType = "Placement";
 /*  FETCH MENTOR DATA */
 
 async function fetchMentor() {
-    console.log("fetchMentor started");
+    
 
     try {
 
@@ -122,18 +126,15 @@ async function fetchMentor() {
         }
 
         const data = await response.json();
-        console.log("Mentor API Response:", data);
+        
 
 mentor = data.mentor;
 
 insights = data.insights || [];
 
-console.log("insights:", insights);
-console.log("insights Length:", insights.length);
+console.table(insights);
 
-        mentor = data.mentor;
 
-        insights = data.insights || [];
 
         mentorName.textContent = mentor.full_name;
 
@@ -153,9 +154,17 @@ console.log("insights Length:", insights.length);
         mentorExperienceCount.textContent =
             `🧳 ${insights.length} Experience(s) Shared`;
 
-        placementinsights = insights;
+        placementinsights = insights.filter(
 
-internshipinsights = [];
+    item => item.experience_type === "Placement"
+
+);
+
+internshipinsights = insights.filter(
+
+    item => item.experience_type === "Internship"
+
+);
 
         renderExperienceChips();
 

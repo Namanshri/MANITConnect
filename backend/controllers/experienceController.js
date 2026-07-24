@@ -6,23 +6,33 @@ const createExperience = async (req, res) => {
 
         const {
 
-            mentor_id,
+    user_id,
 
-            preparation_strategy,
+    preparation_strategy,
 
-            core_skills,
+    core_skills,
 
-            resources,
+    resources,
 
-            interview_timeline,
+    interview_timeline,
 
-            mistakes,
+    mistakes,
 
-            interview_rounds
+    interview_rounds
 
-        } = req.body;
+} = req.body;
+        
+        const mentor = await pool.query(
 
+    "SELECT mentor_id FROM mentors WHERE user_id=$1",
+
+    [user_id]
+
+);
+
+const mentor_id = mentor.rows[0].mentor_id;
         const result = await pool.query(
+            
 
             `INSERT INTO experiences
             (

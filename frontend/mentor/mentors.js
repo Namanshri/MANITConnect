@@ -1,5 +1,8 @@
-const BASE_URL = "https://manitconnnect-2.onrender.com";
-
+const BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000"
+        : "https://manitconnnect-2.onrender.com";
 const mentorContainer = document.getElementById("mentorContainer");
 
 const searchBox = document.getElementById("searchBox");
@@ -91,6 +94,11 @@ function loadCompanyFilter() {
 function renderMentors(data) {
 
     mentorContainer.innerHTML = "";
+
+    if (data.length === 0) {
+    mentorContainer.innerHTML = "<h2>No mentors found.</h2>";
+    return;
+}
 
     data.forEach(mentor => {
 

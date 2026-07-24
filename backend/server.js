@@ -7,10 +7,12 @@ require("dotenv").config();
 const app = express();
 
 app.use(cors({
-    origin: "https://manit-connect.vercel.app",
-    credentials: true
-}));
 
+    origin: process.env.FRONTEND_URL,
+
+    credentials: true
+
+}));
 app.use(express.json());
 
 const mentorRoutes = require("./routes/mentorRoutes");
@@ -35,7 +37,7 @@ app.use("/api/auth", authRoutes);
 
 app.get("/",(req,res)=>{
 
-    res.send("CampusPath Backend Running");
+    res.send("MANITConnect Backend Running");
 
 });
 

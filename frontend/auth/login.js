@@ -4,6 +4,12 @@ const passwordInput = document.getElementById("password");
 
 const togglePassword = document.getElementById("togglePassword");
 
+   const BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000"
+        : "https://manitconnnect-2.onrender.com";
+
 /* SHOW / HIDE PASSWORD */
 
 togglePassword.addEventListener("click", () => {
@@ -40,14 +46,82 @@ loginForm.addEventListener("submit", async (e) => {
 
     const password = passwordInput.value;
 
-    if (email === "" || password === "") {
+    try {
 
-        alert("Please fill all fields.");
+        const response = await fetch(`${BASE_URL}/api/auth/login`, {
 
-        return;
+            method: "POST",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify({
+
+                email,
+
+                password
+
+            })
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            alert(data.message);
+
+            return;
+
+        }
+
+        localStorage.setItem("token", data.token);
+
+        localStorage.setItem("user_id", data.user_id);
+
+        localStorage.setItem("role", data.role);
+
+        if (data.role === "student") {
+
+            window.location.href = "../dashboard/dashboard.html";
+
+        }
+
+        else {
+
+            const response2 = await fetch(
+
+                `${BASE_URL}/api/auth/experience/${data.user_id}`
+
+            );
+
+            const result = await response2.json();
+
+            if (result.hasExperience) {
+
+                window.location.href = "../dashboard/dashboard.html";
+
+            }
+
+            else {
+
+                window.location.href = "../contribute/contribute1.html";
+
+            }
+
+        }
 
     }
 
-    alert("Backend login will be connected in the next step.");
+    catch (err) {
+
+        console.log(err);
+
+        alert("Server Error");
+
+    }
 
 });

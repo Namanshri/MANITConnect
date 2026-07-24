@@ -46,7 +46,7 @@ Dashboard
 
 <a href="../insights/insights.html">
 
-Career Insights
+Insights
 
 </a>
 
@@ -64,7 +64,7 @@ Mentors
 
 <li>
 
-<a href="#">
+<a href="#" onclick="alert('Coming Soon')">
 
 AI Advisor
 
@@ -74,7 +74,7 @@ AI Advisor
 
 <li>
 
-<a href="#">
+<a href="#" onclick="alert('Coming Soon')">
 
 Community
 
@@ -84,7 +84,7 @@ Community
 
 <li>
 
-<a href="#">
+<a href="#" onclick="alert('Coming Soon')">
 
 Your Library
 
@@ -93,14 +93,6 @@ Your Library
 </li>
 
 </ul>
-
-<input
-
-type="text"
-
-placeholder="Search insights..."
-
->
 
 </nav>
 
@@ -119,8 +111,43 @@ from MANIT seniors.
 
 </p>
 
-</section>
 
+</section>
+<section class="stats">
+
+    <div class="stat-card">
+
+        <h2 id="mentorCount">0</h2>
+
+        <p>Mentors</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2 id="experienceCount">0</h2>
+
+        <p>Experiences</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2 id="companyCount">0</h2>
+
+        <p>Companies</p>
+
+    </div>
+
+    <div class="stat-card">
+
+        <h2 id="branchCount">0</h2>
+
+        <p>Branches</p>
+
+    </div>
+
+</section>
 
 <!-- SEARCH -->
 
@@ -128,46 +155,38 @@ from MANIT seniors.
 
 <input
 
+id="searchInput"
+
 type="text"
 
 placeholder="Search company or role"
 
 >
 
-<button>
-
-Search
-
-</button>
 
 </section>
 
 
-<!-- FILTERS -->
-
 <section class="filters">
 
-<select>
+<select id="companyFilter">
 
 <option>Company</option>
 <option>Microsoft</option>
 <option>Amazon</option>
 
-
 </select>
 
-<select>
+<select id="roleFilter">
 
 <option>Role</option>
 <option>SDE-1</option>
 <option>SDE-2</option>
-<option>Data analyst</option>
-<option>Data </option>
-
-
+<option>Data Analyst</option>
+<option>Data Engineer</option>
 </select>
 
-<select>
+<select id="packageFilter">
 
 <option>Package</option>
 <option>50+</option>
@@ -175,22 +194,21 @@ Search
 <option>30+</option>
 <option>20+</option>
 <option>10+</option>
-<option>UNDER 10</option>
+<option>Under 10 LPA</option>
 
 </select>
 
-<select>
+<select id="cgpaFilter">
 
 <option>CGPA</option>
 <option>9+</option>
 <option>8+</option>
 <option>7+</option>
-<option>UNDER 7</option>
-
+<option>Below 7 CGPA</option>
 
 </select>
 
-<select>
+<select id="branchFilter">
 
 <option>Branch</option>
 <option>CSE</option>
@@ -199,10 +217,10 @@ Search
 <option>Mechanical</option>
 <option>Chemical</option>
 <option>Civil</option>
+
 </select>
 
 </section>
-
 
 <!-- LATEST CAREER INSIGHTS -->
 

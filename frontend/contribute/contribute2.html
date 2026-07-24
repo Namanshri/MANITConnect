@@ -9,7 +9,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>CampusPath | Share Experience</title>
+    <title>MANITConnect | Share Experience</title>
 
     <link rel="stylesheet"
           href="contribute2.css">
@@ -29,31 +29,39 @@
 
     <div class="logo">
 
-        <h1>CampusPath</h1>
+        <h1>MANITConnect</h1>
 
         <p>Premium Guidance</p>
 
     </div>
 
-    <ul>
+   <ul>
 
-        <a href="../dashboard/dashboard.html">
+    <li>
+        <a href="../dashboard/dashboard.html">Dashboard</a>
+    </li>
 
-            <li>Dashboard</li>
+    <li>
+        <a href="../insights/insights.html">Insights</a>
+    </li>
 
-        </a>
+    <li>
+        <a href="../mentor/mentors.html">Mentors</a>
+    </li>
 
-        <li>insights</li>
+    <li>
+        <a href="#" onclick="alert('Coming Soon')">AI Advisor</a>
+    </li>
 
-        <li>Mentors</li>
+    <li>
+        <a href="#" onclick="alert('Coming Soon')">Community</a>
+    </li>
 
-        <li>AI Advisor</li>
+    <li>
+        <a href="#" onclick="alert('Coming Soon')">Your Profile</a>
+    </li>
 
-        <li>Community</li>
-
-        <li>Your Library</li>
-
-    </ul>
+</ul>
 
 </nav>
 
@@ -121,14 +129,18 @@ placeholder="How did you prepare?"
 <div class="media-row">
 
 <button
-class="audio-btn">
+class="audio-btn"
+type="button"
+onclick="alert('Audio Recording Coming Soon')">
 
 🎙️ Record Audio
 
 </button>
 
 <button
-class="video-btn">
+class="video-btn"
+type="button"
+onclick="alert('Video Upload Coming Soon')">
 
 📎 Add Video
 
@@ -176,18 +188,22 @@ style="display:none">
     <div class="media-row">
 
         <button
-            class="audio-btn">
+class="audio-btn"
+type="button"
+onclick="alert('Audio Recording Coming Soon')">
 
-            🎙️ Record Audio
+🎙️ Record Audio
 
-        </button>
+</button>
 
         <button
-            class="video-btn">
+class="video-btn"
+type="button"
+onclick="alert('Video Upload Coming Soon')">
 
-            📎 Add Video
+📎 Add Video
 
-        </button>
+</button>
 
         <input
 
@@ -232,18 +248,22 @@ style="display:none">
     <div class="media-row">
 
         <button
-            class="audio-btn">
+class="audio-btn"
+type="button"
+onclick="alert('Audio Recording Coming Soon')">
 
-            🎙️ Record Audio
+🎙️ Record Audio
 
-        </button>
+</button>
 
         <button
-            class="video-btn">
+class="video-btn"
+type="button"
+onclick="alert('Video Upload Coming Soon')">
 
-            📎 Add Video
+📎 Add Video
 
-        </button>
+</button>
 
         <input
 
@@ -288,18 +308,22 @@ style="display:none">
     <div class="media-row">
 
         <button
-            class="audio-btn">
+class="audio-btn"
+type="button"
+onclick="alert('Audio Recording Coming Soon')">
 
-            🎙️ Record Audio
+🎙️ Record Audio
 
-        </button>
+</button>
 
         <button
-            class="video-btn">
+class="video-btn"
+type="button"
+onclick="alert('Video Upload Coming Soon')">
 
-            📎 Add Video
+📎 Add Video
 
-        </button>
+</button>
 
         <input
 
@@ -344,18 +368,22 @@ style="display:none">
     <div class="media-row">
 
         <button
-            class="audio-btn">
+class="audio-btn"
+type="button"
+onclick="alert('Audio Recording Coming Soon')">
 
-            🎙️ Record Audio
+🎙️ Record Audio
 
-        </button>
+</button>
 
-        <button
-            class="video-btn">
+       <button
+class="video-btn"
+type="button"
+onclick="alert('Video Upload Coming Soon')">
 
-            📎 Add Video
+📎 Add Video
 
-        </button>
+</button>
 
         <input
 
@@ -399,19 +427,23 @@ style="display:none">
 
     <div class="media-row">
 
+       <button
+class="audio-btn"
+type="button"
+onclick="alert('Audio Recording Coming Soon')">
+
+🎙️ Record Audio
+
+</button>
+
         <button
-            class="audio-btn">
+class="video-btn"
+type="button"
+onclick="alert('Video Upload Coming Soon')">
 
-            🎙️ Record Audio
+📎 Add Video
 
-        </button>
-
-        <button
-            class="video-btn">
-
-            📎 Add Video
-
-        </button>
+</button>
 
         <input
 
@@ -542,24 +574,56 @@ id="successOverlay"
 class="loading-overlay"
 style="display:none;">
 
-    <div class="loading-card">
+    <div class="success-card">
+
+        <div class="success-icon">
+
+            ✓
+
+        </div>
 
         <h2>
 
-            🎉 Thank You!
+            Experience Submitted!
 
         </h2>
 
         <p>
 
-            Your experience has been shared successfully.
+            Thank you for contributing to
+            <strong>MANITConnect</strong>.
+
+        </p>
+
+        <p class="success-subtitle">
+
+            Your placement/interview experience has been
+            saved successfully and will help juniors
+            prepare better.
 
         </p>
 
         <button
-            id="continueSuccess">
+            id="continueSuccess"
+            class="primary-success-btn">
 
-            Continue
+            🏠 Go to Dashboard
+
+        </button>
+
+        <div class="divider"></div>
+
+        <p class="share-text">
+
+            Want to share another placement or internship?
+
+        </p>
+
+        <button
+            id="shareAnother"
+            class="secondary-success-btn">
+
+            ➕ Share Another Experience
 
         </button>
 
