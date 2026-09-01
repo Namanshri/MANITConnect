@@ -140,7 +140,7 @@ onclick="alert('Audio Recording Coming Soon')">
 <button
 class="video-btn"
 type="button"
-onclick="alert('Video Upload Coming Soon')">
+id="prepVideoBtn">
 
 📎 Add Video
 
@@ -152,11 +152,15 @@ type="file"
 
 accept="video/*"
 
+id="prepVideo"
+
 class="hidden-video">
 
-</div>
+<div id="prepUploadStatus" class="upload-status" aria-live="polite"></div>
 
 <video
+
+id="prepPreview"
 
 class="video-preview"
 
@@ -165,6 +169,8 @@ controls
 style="display:none">
 
 </video>
+
+</div>
 
 </div>
 <!--  CORE SKILLS  -->
@@ -635,7 +641,7 @@ style="display:none;">
 <!--  JAVASCRIPT  -->
 <script src="guidanceQuestions.js"></script>
 
-<script src="contribute2.js"></script>
+<script src="contribute2.js?v=20260807-file-link"></script>
 
 </body>
 

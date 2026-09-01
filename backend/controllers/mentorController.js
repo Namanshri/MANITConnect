@@ -1,21 +1,28 @@
 const pool = require("../config/db");
 
+/*
+   CREATE / UPDATE MENTOR PROFILE
+   mentor_id is resolved from the authenticated user's cookie (req.user),
+   NEVER from req.body — a mentor can only ever update their own profile.
+*/
 const createMentor = async (req, res) => {
 
     try {
 
         const {
 
-            user_id,
             full_name,
             company,
             role,
+            branch,
             package_lpa,
             cgpa,
             experience_type,
             placement_mode
 
         } = req.body;
+
+        const user_id = req.user.user_id;
 
         const result = await pool.query(
 
@@ -24,13 +31,14 @@ const createMentor = async (req, res) => {
 full_name=$1,
 company=$2,
 role=$3,
-package_lpa=$4,
-cgpa=$5,
-experience_type=$6,
-placement_mode=$7
+branch=$4,
+package_lpa=$5,
+cgpa=$6,
+experience_type=$7,
+placement_mode=$8
 
 
-WHERE user_id=$8
+WHERE user_id=$9
 
              RETURNING mentor_id`,
 
@@ -39,6 +47,7 @@ WHERE user_id=$8
                 full_name,
                 company,
                 role,
+                branch,
                 package_lpa,
                 cgpa,
                 experience_type,
@@ -48,6 +57,16 @@ WHERE user_id=$8
             ]
 
         );
+
+        if (result.rows.length === 0) {
+
+            return res.status(404).json({
+
+                message: "Mentor profile not found for this account."
+
+            });
+
+        }
 
         res.json({
 

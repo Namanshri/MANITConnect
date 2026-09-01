@@ -1,42 +1,10 @@
-const loginForm = document.getElementById("loginForm");
-
-const passwordInput = document.getElementById("password");
-
-const togglePassword = document.getElementById("togglePassword");
-
-   const BASE_URL =
+const BASE_URL =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1"
         ? "http://localhost:5000"
         : "https://manitconnnect-2.onrender.com";
 
-/* SHOW / HIDE PASSWORD */
-
-togglePassword.addEventListener("click", () => {
-
-    if (passwordInput.type === "password") {
-
-        passwordInput.type = "text";
-
-        togglePassword.innerHTML =
-
-        '<i class="fa-regular fa-eye-slash"></i>';
-
-    }
-
-    else {
-
-        passwordInput.type = "password";
-
-        togglePassword.innerHTML =
-
-        '<i class="fa-regular fa-eye"></i>';
-
-    }
-
-});
-
-/* LOGIN */
+const loginForm = document.getElementById("loginForm");
 
 loginForm.addEventListener("submit", async (e) => {
 
@@ -44,73 +12,67 @@ loginForm.addEventListener("submit", async (e) => {
 
     const email = document.getElementById("email").value.trim();
 
-    const password = passwordInput.value;
+    const password = document.getElementById("password").value;
+
+    const submitBtn = loginForm.querySelector("button[type='submit']");
+
+    submitBtn.disabled = true;
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = "Logging in...";
 
     try {
 
-        const response = await fetch(`${BASE_URL}/api/auth/login`, {
+        const response = await fetch(
 
-            method: "POST",
+            `${BASE_URL}/api/auth/login`,
 
-            headers: {
+            {
 
-                "Content-Type": "application/json"
+                method: "POST",
 
-            },
+                headers: {
 
-            body: JSON.stringify({
+                    "Content-Type": "application/json"
 
-                email,
+                },
 
-                password
+                // credentials:"include" is what lets the browser accept
+                // and later send the HttpOnly cookie the server sets here
+                credentials: "include",
 
-            })
+                body: JSON.stringify({ email, password })
 
-        });
+            }
+
+        );
 
         const data = await response.json();
 
         if (!response.ok) {
 
-            alert(data.message);
+            alert(data.message || "Login failed.");
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
 
             return;
 
         }
 
-        localStorage.setItem("token", data.token);
+        // Identity now lives in the HttpOnly cookie. We only use the
+        // role from this response to decide where to redirect —
+        // nothing here is stored or trusted later.
+        if (data.role === "mentor") {
 
-        localStorage.setItem("user_id", data.user_id);
+            window.location.href = "../mentor/mentor-dashboard.html";
 
-        localStorage.setItem("role", data.role);
+        } else if (data.role === "admin") {
 
-        if (data.role === "student") {
+            window.location.href = "../admin/admin-dashboard.html";
+
+        } else {
 
             window.location.href = "../dashboard/dashboard.html";
-
-        }
-
-        else {
-
-            const response2 = await fetch(
-
-                `${BASE_URL}/api/auth/experience/${data.user_id}`
-
-            );
-
-            const result = await response2.json();
-
-            if (result.hasExperience) {
-
-                window.location.href = "../dashboard/dashboard.html";
-
-            }
-
-            else {
-
-                window.location.href = "../contribute/contribute1.html";
-
-            }
 
         }
 
@@ -118,9 +80,12 @@ loginForm.addEventListener("submit", async (e) => {
 
     catch (err) {
 
-        console.log(err);
+        console.error(err);
 
         alert("Server Error");
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
 
     }
 

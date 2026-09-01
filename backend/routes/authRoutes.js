@@ -10,13 +10,19 @@ const {
 
     login,
 
+    logout,
+
+    getMe,
+
     checkExperience,
-    
+
     testEmail,
 
     verifyEmail
 
 } = require("../controllers/authController");
+
+const authenticateUser = require("../middleware/authMiddleware");
 
 router.get("/verify-email/:token", verifyEmail);
 
@@ -52,11 +58,35 @@ router.post(
 
 );
 
+/* LOGOUT */
+
+router.post(
+
+    "/logout",
+
+    logout
+
+);
+
+/* CURRENT USER — trusted identity source for the frontend */
+
+router.get(
+
+    "/me",
+
+    authenticateUser,
+
+    getMe
+
+);
+
 /* CHECK EXPERIENCE */
 
 router.get(
 
     "/experience/:userId",
+
+    authenticateUser,
 
     checkExperience
 

@@ -301,6 +301,23 @@ display:none;
 
 }
 
+.upload-status{
+    flex-basis:100%;
+    min-height:1.25rem;
+    color:#555;
+    font-size:14px;
+    font-weight:600;
+}
+
+.upload-status.uploading{color:#0077aa;}
+.upload-status.success{color:#16803c;}
+.upload-status.error{color:#c62828;}
+
+.upload-status a{
+    color:#0057b8;
+    text-decoration:underline;
+}
+
 
 
 /* VIDEO PREVIEW */
@@ -308,6 +325,10 @@ display:none;
 .video-preview{
 
 width:100%;
+
+min-height:240px;
+
+display:block;
 
 margin-top:20px;
 

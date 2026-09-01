@@ -1,16 +1,40 @@
 const pool = require("../config/db");
 
+/*
+   CREATE GUIDANCE ANSWER
+   mentor_id is looked up from the authenticated user, NEVER trusted
+   from req.body — a mentor can only write guidance under their own profile.
+*/
 const createGuidance = async (req, res) => {
 
     try {
 
         const {
-            mentor_id,
             year,
             category,
             question,
             answer
         } = req.body;
+
+        const mentor = await pool.query(
+
+            "SELECT mentor_id FROM mentors WHERE user_id=$1",
+
+            [req.user.user_id]
+
+        );
+
+        if (mentor.rows.length === 0) {
+
+            return res.status(404).json({
+
+                message: "No mentor profile found for this account."
+
+            });
+
+        }
+
+        const mentor_id = mentor.rows[0].mentor_id;
 
         const result = await pool.query(
 

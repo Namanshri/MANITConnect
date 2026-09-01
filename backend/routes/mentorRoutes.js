@@ -4,6 +4,10 @@ const router = express.Router();
 
 const mentorController = require("../controllers/mentorController");
 
+const authenticateUser = require("../middleware/authMiddleware");
+
+const authorizeRoles = require("../middleware/authorizeRoles");
+
 // Search route MUST come before /:id
 router.get("/search", mentorController.searchMentors);
 
@@ -18,6 +22,16 @@ router.get("/", mentorController.getAllMentors);
 
 router.get("/:id", mentorController.getMentorById);
 
-router.post("/", mentorController.createMentor);
+router.post(
+
+    "/",
+
+    authenticateUser,
+
+    authorizeRoles("mentor"),
+
+    mentorController.createMentor
+
+);
 
 module.exports = router;
