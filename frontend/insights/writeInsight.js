@@ -1,4 +1,13 @@
-const BASE_URL = "https://manitconnnect-2.onrender.com";
+const BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000"
+        : "https://manitconnnect-2.onrender.com";
+
+/* Require a logged-in mentor. requireAuth() comes from shared/session.js —
+   include that script BEFORE this one in writeInsight.html:
+   <script src="../shared/session.js"></script> */
+requireAuth(["mentor"]);
 
 const insightForm = document.getElementById("insightForm");
 
@@ -86,29 +95,28 @@ async function publishInsight(event) {
 
     event.preventDefault();
 
-    const mentorId = sessionStorage.getItem("mentor_id");
-
-    if (!mentorId) {
-
-        alert("Only mentors can publish insights.");
-
-        return;
-
-    }
-
+    // NOTE: no mentor_id sent here at all — the backend derives it from
+    // the login cookie via authMiddleware. Sending one from the client
+    // would be exactly the "trust the frontend" bug we've been fixing
+    // everywhere else.
     const insight = {
-
-        mentor_id: mentorId,
 
         title: document.getElementById("title").value,
 
         category: document.getElementById("category").value,
 
-        tags: document.getElementById("tags").value,
+        // was reading a non-existent #tags input before — this is the
+        // tags array your chip UI (tagInput/selectedTags) actually builds
+        tags: tags.join(","),
 
         content: document.getElementById("content").value
 
     };
+
+    const submitBtn = insightForm.querySelector("button[type='submit']");
+    submitBtn.disabled = true;
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = "Publishing...";
 
     try {
 
@@ -126,15 +134,19 @@ async function publishInsight(event) {
 
                 },
 
+                credentials: "include",
+
                 body: JSON.stringify(insight)
 
             }
 
         );
 
+        const data = await response.json().catch(() => ({}));
+
         if (!response.ok) {
 
-            throw new Error("Unable to publish insight.");
+            throw new Error(data.message || "Unable to publish insight.");
 
         }
 
@@ -148,7 +160,10 @@ async function publishInsight(event) {
 
         console.error(error);
 
-        alert("Something went wrong.");
+        alert(error.message || "Something went wrong.");
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
 
     }
 

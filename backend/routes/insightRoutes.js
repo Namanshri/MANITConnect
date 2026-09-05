@@ -17,11 +17,19 @@ const {
 
 } = require("../controllers/insightController");
 
-/* CREATE INSIGHT */
+const authenticateUser = require("../middleware/authMiddleware");
+
+const authorizeRoles = require("../middleware/authorizeRoles");
+
+/* CREATE INSIGHT — mentor only, mentor_id derived from the session */
 
 router.post(
 
     "/",
+
+    authenticateUser,
+
+    authorizeRoles("mentor"),
 
     createInsight
 

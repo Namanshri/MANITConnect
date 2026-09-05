@@ -1,14 +1,33 @@
 const pool = require("../config/db");
 
-/* CREATE INSIGHT */
+/*
+   Company/role/package_lpa/experience_type live on `experiences` now
+   (a mentor can have several journeys), not on `mentors`. This LATERAL
+   join attaches a mentor's most recent journey to each insight so the
+   frontend (dashboard.js, insights.js) can keep reading
+   insight.company / insight.role / insight.package_lpa /
+   insight.experience_type exactly as it did before.
+*/
+const MENTOR_JOIN = `
+    JOIN mentors ON insights.mentor_id = mentors.mentor_id
+    LEFT JOIN LATERAL (
+        SELECT company, role, package_lpa, experience_type
+        FROM experiences
+        WHERE experiences.mentor_id = mentors.mentor_id
+        ORDER BY experience_id DESC
+        LIMIT 1
+    ) latest ON true
+`;
 
+/* CREATE INSIGHT
+   mentor_id is resolved from the authenticated user (req.user.user_id),
+   NEVER trusted from req.body.
+*/
 const createInsight = async (req, res) => {
 
     try {
 
         const {
-
-            mentor_id,
 
             title,
 
@@ -19,6 +38,26 @@ const createInsight = async (req, res) => {
             tags
 
         } = req.body;
+
+        const mentor = await pool.query(
+
+            "SELECT mentor_id FROM mentors WHERE user_id=$1",
+
+            [req.user.user_id]
+
+        );
+
+        if (mentor.rows.length === 0) {
+
+            return res.status(404).json({
+
+                message: "No mentor profile found for this account."
+
+            });
+
+        }
+
+        const mentor_id = mentor.rows[0].mentor_id;
 
         const result = await pool.query(
 
@@ -96,19 +135,17 @@ const getAllInsights = async (req, res) => {
 
         mentors.full_name,
 
-        mentors.company,
+        latest.company,
 
-        mentors.role,
+        latest.role,
 
-        mentors.package_lpa,
+        latest.package_lpa,
 
-        mentors.experience_type
+        latest.experience_type
 
      FROM insights
 
-     JOIN mentors
-
-     ON insights.mentor_id = mentors.mentor_id
+     ${MENTOR_JOIN}
 
      ORDER BY insights.created_at DESC`
 
@@ -148,19 +185,17 @@ const getInsightById = async (req, res) => {
 
     mentors.full_name,
 
-    mentors.company,
+    latest.company,
 
-    mentors.role,
+    latest.role,
 
-    mentors.package_lpa,
+    latest.package_lpa,
 
-    mentors.experience_type
+    latest.experience_type
 
 FROM insights
 
-JOIN mentors
-
-ON insights.mentor_id = mentors.mentor_id
+${MENTOR_JOIN}
 
 WHERE insight_id=$1`,
 
@@ -202,19 +237,17 @@ const getInsightsByMentor = async (req, res) => {
 
     mentors.full_name,
 
-    mentors.company,
+    latest.company,
 
-    mentors.role,
+    latest.role,
 
-    mentors.package_lpa,
+    latest.package_lpa,
 
-    mentors.experience_type
+    latest.experience_type
 
 FROM insights
 
-JOIN mentors
-
-ON insights.mentor_id = mentors.mentor_id
+${MENTOR_JOIN}
 
 WHERE insights.mentor_id=$1
 

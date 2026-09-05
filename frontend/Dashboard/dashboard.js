@@ -6,16 +6,9 @@ const BASE_URL =
 
 const searchInput = document.getElementById("searchInput");
 
-const searchBtn = document.getElementById("searchBtn");
-
 const mentorCount = document.getElementById("mentorCount");
 
-const placementCount = document.getElementById("placementCount");
-
-const internshipCount = document.getElementById("internshipCount");
-
 const recentMentors = document.getElementById("recentMentors");
-
 
 const companyFilter = document.getElementById("companyFilter");
 
@@ -67,8 +60,6 @@ async function loadDashboard() {
         }
 
         mentors = await response.json();
-
-        //updateStatistics();
 
         renderRecentMentors();
         loadFilterOptions();
@@ -136,143 +127,34 @@ function populateDropdown(dropdown, items, key, defaultText) {
 
 }
 
-async function searchMentors() {
-
-    const query = searchInput.value.trim();
-
-    if (!query) {
-
-        renderRecentMentors();
-
-        return;
-
-    }
-
-    try {
-
-        const response = await fetch(
-
-            `${BASE_URL}/api/mentor/search?q=${encodeURIComponent(query)}`
-
-        );
-
-        if (!response.ok) {
-
-            throw new Error("Search failed");
-
-        }
-
-        const results = await response.json();
-
-        recentMentors.innerHTML = "";
-
-        if (results.length === 0) {
-    recentMentors.innerHTML = "<p>No mentors found.</p>";
-    return;
-}
-
-results.forEach(mentor => {
-
-            recentMentors.innerHTML += `
-
-            <div class="card">
-
-                <div class="top">
-
-                    <img
-                    src="https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.full_name)}&background=8a00ff&color=ffffff">
-
-                    <div>
-
-                        <h3>${mentor.full_name}</h3>
-
-                        <p>${mentor.company}</p>
-
-                    </div>
-
-                </div>
-
-                <span class="tag">
-
-                    ${mentor.role}
-
-                </span>
-
-                <h2>
-
-                    ${mentor.package_lpa} LPA
-
-                </h2>
-
-                <p>
-
-                    ⭐ CGPA : ${mentor.cgpa}
-
-                </p>
-
-                <div class="buttons">
-
-                    <button onclick="openProfile(${mentor.mentor_id})">
-
-                        View Profile
-
-                    </button>
-
-                    <button onclick="openProfile(${mentor.mentor_id})">
-
-                        View Journey
-
-                    </button>
-
-                </div>
-
-            </div>
-
-            `;
-
-        });
-
-    }
-
-    catch (err) {
-
-        console.error(err);
-
-    }
-
-}
-
-/* STATISTICS */
-
-function updateStatistics() {
-
-    mentorCount.textContent = mentors.length;
-
-    placementCount.textContent = mentors.filter(
-
-        mentor => mentor.experience_type === "Placement"
-
-    ).length;
-
-    internshipCount.textContent = mentors.filter(
-
-        mentor => mentor.experience_type === "Internship"
-
-    ).length;
-
-}
-
-/* LATEST MENTORS */
-
+/* LATEST MENTORS
+   company/role/package_lpa now come from each mentor's most recent
+   journey (latest_company/latest_role/latest_package_lpa, from the
+   mentorController's LATERAL join) — not directly off the mentor row. */
 function renderRecentMentors(list = mentors) {
 
     recentMentors.innerHTML = "";
+
+    if (list.length === 0) {
+
+        recentMentors.innerHTML = "<p>No mentors found.</p>";
+        return;
+
+    }
 
     list
 
     .slice(0,6)
 
     .forEach(mentor=>{
+
+        const company = mentor.latest_company || "No journey shared yet";
+
+        const role = mentor.latest_role || "";
+
+        const packageLine = mentor.latest_package_lpa != null ? `${mentor.latest_package_lpa} LPA` : "—";
+
+        const cgpaLine = mentor.cgpa != null ? mentor.cgpa : "—";
 
         recentMentors.innerHTML += `
 
@@ -296,7 +178,7 @@ function renderRecentMentors(list = mentors) {
 
                     <p>
 
-                        ${mentor.company}
+                        ${company}
 
                     </p>
 
@@ -306,19 +188,19 @@ function renderRecentMentors(list = mentors) {
 
             <span class="tag">
 
-                ${mentor.role}
+                ${role}
 
             </span>
 
             <h2>
 
-                ${mentor.package_lpa} LPA
+                ${packageLine}
 
             </h2>
 
             <p>
 
-                ⭐ CGPA : ${mentor.cgpa}
+                ⭐ CGPA : ${cgpaLine}
 
             </p>
 
@@ -360,7 +242,7 @@ function openProfile(id){
 
 }
 
-/* insights */
+/* INSIGHTS */
 
 async function loadRecentInsights(){
 
@@ -393,13 +275,13 @@ async function loadRecentInsights(){
 
                 <h3>
 
-                    ${exp.company || "Company"}
+                    ${exp.company || exp.title || "Insight"}
 
                 </h3>
 
                 <p>
 
-                    ${exp.preparation_strategy || "-"}
+                    ${(exp.content || "").substring(0, 150) || "-"}
 
                 </p>
 
@@ -433,7 +315,8 @@ function applyFilters(){
 
     let filtered = [...mentors];
 
-    // Search
+    // Search — guarded against mentors with no journey yet (no
+    // latest_company) so this can't throw on a null field anymore.
     const query = searchInput.value.trim().toLowerCase();
 
     if(query){
@@ -444,9 +327,9 @@ function applyFilters(){
 
                 m.full_name.toLowerCase().includes(query) ||
 
-                m.company.toLowerCase().includes(query) ||
+                (m.latest_company || "").toLowerCase().includes(query) ||
 
-                m.role.toLowerCase().includes(query)
+                (m.latest_role || "").toLowerCase().includes(query)
 
             );
 
@@ -460,7 +343,7 @@ function applyFilters(){
 
     filtered = filtered.filter(
 
-        m => m.company.toLowerCase() === companyFilter.value.toLowerCase()
+        m => (m.latest_company || "").toLowerCase() === companyFilter.value.toLowerCase()
 
     );
 
@@ -472,7 +355,7 @@ function applyFilters(){
 
     filtered = filtered.filter(
 
-        m => m.role.toLowerCase() === roleFilter.value.toLowerCase()
+        m => (m.latest_role || "").toLowerCase() === roleFilter.value.toLowerCase()
 
     );
 
@@ -484,7 +367,7 @@ function applyFilters(){
 
         filtered=filtered.filter(
 
-            m=>parseFloat(m.package_lpa)>=50
+            m=>parseFloat(m.latest_package_lpa)>=50
 
         );
 
@@ -494,7 +377,7 @@ function applyFilters(){
 
         filtered=filtered.filter(
 
-            m=>parseFloat(m.package_lpa)>=40
+            m=>parseFloat(m.latest_package_lpa)>=40
 
         );
 
@@ -504,7 +387,7 @@ function applyFilters(){
 
         filtered=filtered.filter(
 
-            m=>parseFloat(m.package_lpa)>=30
+            m=>parseFloat(m.latest_package_lpa)>=30
 
         );
 
@@ -514,7 +397,7 @@ function applyFilters(){
 
         filtered=filtered.filter(
 
-            m=>parseFloat(m.package_lpa)>=20
+            m=>parseFloat(m.latest_package_lpa)>=20
 
         );
 
@@ -524,17 +407,17 @@ function applyFilters(){
 
         filtered=filtered.filter(
 
-            m=>parseFloat(m.package_lpa)>=10
+            m=>parseFloat(m.latest_package_lpa)>=10
 
         );
 
     }
 
-    else if(packageFilter.value==="UNDER 10"){
+    else if(packageFilter.value==="Under 10 LPA"){
 
         filtered=filtered.filter(
 
-            m=>parseFloat(m.package_lpa)<10
+            m=>parseFloat(m.latest_package_lpa)<10
 
         );
 
@@ -572,7 +455,7 @@ function applyFilters(){
 
     }
 
-    else if(cgpaFilter.value==="UNDER 7"){
+    else if(cgpaFilter.value==="Below 7 CGPA"){
 
         filtered=filtered.filter(
 

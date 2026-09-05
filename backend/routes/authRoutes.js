@@ -1,5 +1,7 @@
 const express = require("express");
 
+const rateLimit = require("express-rate-limit");
+
 const router = express.Router();
 
 const {
@@ -18,11 +20,29 @@ const {
 
     testEmail,
 
-    verifyEmail
+    verifyEmail,
+
+    forgotPassword,
+
+    verifyOtp,
+
+    resetPassword
 
 } = require("../controllers/authController");
 
 const authenticateUser = require("../middleware/authMiddleware");
+
+// OTP endpoints get their own limiter — sending an OTP triggers an
+// email + a DB write, so this is the route most worth capping.
+const otpLimiter = rateLimit({
+
+    windowMs: 15 * 60 * 1000,
+
+    max: 5,
+
+    message: { message: "Too many attempts. Please try again in a few minutes." }
+
+});
 
 router.get("/verify-email/:token", verifyEmail);
 
@@ -68,7 +88,7 @@ router.post(
 
 );
 
-/* CURRENT USER — trusted identity source for the frontend */
+/* CURRENT USER */
 
 router.get(
 
@@ -92,6 +112,34 @@ router.get(
 
 );
 
+/* FORGOT PASSWORD FLOW */
 
+router.post(
+
+    "/forgot-password",
+
+    otpLimiter,
+
+    forgotPassword
+
+);
+
+router.post(
+
+    "/verify-otp",
+
+    otpLimiter,
+
+    verifyOtp
+
+);
+
+router.post(
+
+    "/reset-password",
+
+    resetPassword
+
+);
 
 module.exports = router;

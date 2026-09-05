@@ -1,3 +1,9 @@
+const BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000"
+        : "https://manitconnnect-2.onrender.com";
+
 const step1 = document.getElementById("step1");
 
 const step2 = document.getElementById("step2");
@@ -12,68 +18,203 @@ const verifyOtpBtn = document.getElementById("verifyOtpBtn");
 
 const resetBtn = document.getElementById("resetBtn");
 
-/* STEP 1 */
+// Carried between steps — the backend needs the email on every step,
+// and the reset_token (proof the OTP was verified) on step 3.
+let resetEmail = "";
 
-sendOtpBtn.addEventListener("click", () => {
+let resetToken = "";
+
+function setButtonLoading(button, loadingText) {
+
+    button.disabled = true;
+
+    button.dataset.originalText = button.textContent;
+
+    button.textContent = loadingText;
+
+}
+
+function resetButton(button) {
+
+    button.disabled = false;
+
+    button.textContent = button.dataset.originalText || button.textContent;
+
+}
+
+/* STEP 1 — request OTP */
+
+sendOtpBtn.addEventListener("click", async () => {
 
     const email = document.getElementById("email").value.trim();
 
-    if(email===""){
+    if (email === "") {
 
         alert("Please enter your email.");
-
         return;
 
     }
 
-    step1.style.display="none";
+    setButtonLoading(sendOtpBtn, "Sending...");
 
-    step2.style.display="block";
+    try {
 
-    steps[0].classList.remove("active");
+        const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
 
-    steps[1].classList.add("active");
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(data.message || "Unable to send OTP.");
+
+        }
+
+        resetEmail = email;
+
+        alert(data.message);
+
+        step1.style.display = "none";
+        step2.style.display = "block";
+
+        steps[0].classList.remove("active");
+        steps[1].classList.add("active");
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+        alert(err.message || "Something went wrong.");
+
+    }
+
+    finally {
+
+        resetButton(sendOtpBtn);
+
+    }
 
 });
 
-/* STEP 2 */
+/* STEP 2 — verify OTP */
 
-verifyOtpBtn.addEventListener("click",()=>{
+verifyOtpBtn.addEventListener("click", async () => {
 
-    const otp=document.getElementById("otp").value.trim();
+    const otp = document.getElementById("otp").value.trim();
 
-    if(otp===""){
+    if (otp === "") {
 
         alert("Please enter the OTP.");
-
         return;
 
     }
 
-    step2.style.display="none";
+    setButtonLoading(verifyOtpBtn, "Verifying...");
 
-    step3.style.display="block";
+    try {
 
-    steps[1].classList.remove("active");
+        const response = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
 
-    steps[2].classList.add("active");
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: resetEmail, otp })
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(data.message || "Invalid OTP.");
+
+        }
+
+        // This token proves the OTP was verified — step 3 can't run
+        // without it, so nobody can jump straight to resetting a
+        // password just by knowing an email address.
+        resetToken = data.reset_token;
+
+        step2.style.display = "none";
+        step3.style.display = "block";
+
+        steps[1].classList.remove("active");
+        steps[2].classList.add("active");
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+        alert(err.message || "Something went wrong.");
+
+    }
+
+    finally {
+
+        resetButton(verifyOtpBtn);
+
+    }
 
 });
 
-/* STEP 3 */
+/* STEP 3 — set new password */
 
-resetBtn.addEventListener("click",()=>{
+resetBtn.addEventListener("click", async () => {
 
-    const password=document.getElementById("newPassword").value;
+    const password = document.getElementById("newPassword").value;
 
-    if(password.length<6){
+    if (password.length < 8) {
 
-        alert("Password must be at least 6 characters.");
-
+        alert("Password must be at least 8 characters.");
         return;
 
     }
 
-    alert("Backend password reset will be connected next.");
+    setButtonLoading(resetBtn, "Resetting...");
+
+    try {
+
+        const response = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+
+                email: resetEmail,
+                reset_token: resetToken,
+                new_password: password
+
+            })
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(data.message || "Unable to reset password.");
+
+        }
+
+        alert(data.message);
+
+        window.location.href = "login.html";
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+        alert(err.message || "Something went wrong.");
+
+        resetButton(resetBtn);
+
+    }
 
 });

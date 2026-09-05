@@ -8,12 +8,6 @@ const bcrypt = require("bcrypt");
 
 const jwt = require("jsonwebtoken");
 
-/**
- * Cookie options — sameSite/secure flip based on environment so cross-site
- * cookies (Vercel frontend -> Render backend) work in production while
- * plain http://localhost still works in dev (Secure cookies are dropped
- * over http).
- */
 const getCookieOptions = () => {
 
     const isProduction = process.env.NODE_ENV === "production";
@@ -26,7 +20,7 @@ const getCookieOptions = () => {
 
         sameSite: isProduction ? "none" : "lax",
 
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
 
         path: "/"
 
@@ -167,7 +161,7 @@ await sendEmail(
 
 
 
-/*  MENTOR REGISTRATION*/
+/*  MENTOR REGISTRATION */
 
 const registerMentor = async (req,res)=>{
 
@@ -178,11 +172,6 @@ const registerMentor = async (req,res)=>{
     full_name,
 
     email,
-
-    company,
-
-    role,
-
 
     branch,
 
@@ -268,8 +257,6 @@ INSERT INTO mentors
 (
     user_id,
     full_name,
-    company,
-    role,
     branch
 )
 
@@ -277,9 +264,7 @@ VALUES
 (
     $1,
     $2,
-    $3,
-    $4,
-    $5
+    $3
 )
 
 `,
@@ -287,8 +272,6 @@ VALUES
 [
     user.rows[0].user_id,
     full_name,
-    company,
-    role,
     branch
 ]
 
@@ -346,8 +329,6 @@ await sendEmail(
     }
 
 };
-
-/*  LOGIN — sets the JWT as an HttpOnly cookie, never returns it in JSON  */
 
 const login = async (req, res) => {
 
@@ -439,9 +420,6 @@ const login = async (req, res) => {
 
         res.cookie("token", token, getCookieOptions());
 
-        // NOTE: token is intentionally NOT included in the JSON body.
-        // The frontend gets identity from GET /api/auth/me, not from
-        // anything it stores itself.
         res.status(200).json({
 
             message: "Login successful.",
@@ -470,8 +448,6 @@ const login = async (req, res) => {
 
 };
 
-/* LOGOUT — clears the cookie */
-
 const logout = async (req, res) => {
 
     res.clearCookie("token", { ...getCookieOptions(), maxAge: undefined });
@@ -483,8 +459,6 @@ const logout = async (req, res) => {
     });
 
 };
-
-/* GET CURRENT USER — the ONLY trusted source of "who am I" for the frontend */
 
 const getMe = async (req, res) => {
 
@@ -506,8 +480,6 @@ const getMe = async (req, res) => {
 
         }
 
-        // If this user is a mentor, also hand back their mentor_id so the
-        // frontend never has to guess/store it — it can fetch it fresh each time.
         let mentor_id = null;
 
         if (result.rows[0].role === "mentor") {
@@ -566,7 +538,7 @@ const checkExperience = async (req, res) => {
         const mentorId = mentor.rows[0].mentor_id;
 
         const experience = await pool.query(
-            "SELECT * FROM experiences WHERE mentor_id=$1",
+            "SELECT experience_id FROM experiences WHERE mentor_id=$1",
             [mentorId]
         );
 
@@ -696,6 +668,244 @@ const verifyEmail = async (req, res) => {
 
 };
 
+/* ============================================================
+   FORGOT PASSWORD — Step 1: request an OTP by email
+   ============================================================ */
+
+const OTP_EXPIRY_MINUTES = 10;
+const RESET_TOKEN_EXPIRY_MINUTES = 15;
+
+const forgotPassword = async (req, res) => {
+
+    try {
+
+        const { email } = req.body;
+
+        if (!email) {
+
+            return res.status(400).json({ message: "Email is required." });
+
+        }
+
+        const result = await pool.query(
+
+            "SELECT user_id, full_name FROM users WHERE email=$1",
+
+            [email]
+
+        );
+
+        // Always respond the same way whether or not the email exists,
+        // so this endpoint can't be used to check which emails are
+        // registered.
+        const genericResponse = {
+
+            message: "If that email is registered, an OTP has been sent to it."
+
+        };
+
+        if (result.rows.length === 0) {
+
+            return res.status(200).json(genericResponse);
+
+        }
+
+        const otp = String(Math.floor(100000 + Math.random() * 900000)); // 6 digits
+
+        const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+
+        await pool.query(
+
+            `UPDATE users
+             SET reset_otp = $1, reset_otp_expires_at = $2, reset_token = NULL, reset_token_expires_at = NULL
+             WHERE email = $3`,
+
+            [otp, expiresAt, email]
+
+        );
+
+        await sendEmail(
+
+            email,
+
+            "Your MANITConnect password reset code",
+
+            `
+            <h2>Password Reset</h2>
+            <p>Hi ${result.rows[0].full_name},</p>
+            <p>Your one-time code is:</p>
+            <h1 style="letter-spacing:6px;">${otp}</h1>
+            <p>This code expires in ${OTP_EXPIRY_MINUTES} minutes. If you didn't request this, you can ignore this email.</p>
+            `
+
+        );
+
+        res.status(200).json(genericResponse);
+
+    }
+
+    catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({ message: "Database Error" });
+
+    }
+
+};
+
+/* ============================================================
+   FORGOT PASSWORD — Step 2: verify the OTP, issue a short-lived
+   reset token that step 3 must present (so nobody can call
+   reset-password on an email without having proven they got the
+   OTP in their inbox).
+   ============================================================ */
+
+const verifyOtp = async (req, res) => {
+
+    try {
+
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+
+            return res.status(400).json({ message: "Email and OTP are required." });
+
+        }
+
+        const result = await pool.query(
+
+            "SELECT user_id, reset_otp, reset_otp_expires_at FROM users WHERE email=$1",
+
+            [email]
+
+        );
+
+        if (result.rows.length === 0) {
+
+            return res.status(400).json({ message: "Invalid OTP." });
+
+        }
+
+        const user = result.rows[0];
+
+        const isExpired =
+            !user.reset_otp_expires_at || new Date(user.reset_otp_expires_at) < new Date();
+
+        if (!user.reset_otp || user.reset_otp !== otp || isExpired) {
+
+            return res.status(400).json({ message: "Invalid or expired OTP." });
+
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        const resetTokenExpiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRY_MINUTES * 60 * 1000);
+
+        await pool.query(
+
+            `UPDATE users
+             SET reset_token = $1, reset_token_expires_at = $2, reset_otp = NULL, reset_otp_expires_at = NULL
+             WHERE email = $3`,
+
+            [resetToken, resetTokenExpiresAt, email]
+
+        );
+
+        res.status(200).json({
+
+            message: "OTP verified.",
+
+            reset_token: resetToken
+
+        });
+
+    }
+
+    catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({ message: "Database Error" });
+
+    }
+
+};
+
+/* ============================================================
+   FORGOT PASSWORD — Step 3: set the new password, given the
+   reset_token issued by verifyOtp.
+   ============================================================ */
+
+const resetPassword = async (req, res) => {
+
+    try {
+
+        const { email, reset_token, new_password } = req.body;
+
+        if (!email || !reset_token || !new_password) {
+
+            return res.status(400).json({ message: "Email, reset token and new password are required." });
+
+        }
+
+        if (new_password.length < 8) {
+
+            return res.status(400).json({ message: "Password must be at least 8 characters long." });
+
+        }
+
+        const result = await pool.query(
+
+            "SELECT user_id, reset_token, reset_token_expires_at FROM users WHERE email=$1",
+
+            [email]
+
+        );
+
+        if (result.rows.length === 0) {
+
+            return res.status(400).json({ message: "Invalid or expired request." });
+
+        }
+
+        const user = result.rows[0];
+
+        const isExpired =
+            !user.reset_token_expires_at || new Date(user.reset_token_expires_at) < new Date();
+
+        if (!user.reset_token || user.reset_token !== reset_token || isExpired) {
+
+            return res.status(400).json({ message: "Invalid or expired request. Please start over." });
+
+        }
+
+        const hashedPassword = await bcrypt.hash(new_password, 10);
+
+        await pool.query(
+
+            `UPDATE users
+             SET password = $1, reset_token = NULL, reset_token_expires_at = NULL
+             WHERE email = $2`,
+
+            [hashedPassword, email]
+
+        );
+
+        res.status(200).json({ message: "Password reset successfully. You can now log in." });
+
+    }
+
+    catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({ message: "Database Error" });
+
+    }
+
+};
+
 module.exports = {
 
     registerStudent,
@@ -712,6 +922,12 @@ module.exports = {
 
     testEmail,
 
-    verifyEmail
+    verifyEmail,
+
+    forgotPassword,
+
+    verifyOtp,
+
+    resetPassword
 
 };
