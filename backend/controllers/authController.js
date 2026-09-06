@@ -28,9 +28,15 @@ const getCookieOptions = () => {
 
 };
 
-/*  STUDENT REGISTRATION */
-
+/*  STUDENT REGISTRATION
+    Wrapped in a transaction now: the user row is only committed if the
+    verification email actually sends. If sendEmail throws (e.g. an SMTP
+    timeout), everything rolls back — no orphaned unverifiable account,
+    and the person can just try registering again cleanly.
+*/
 const registerStudent = async (req, res) => {
+
+    const client = await pool.connect();
 
     try {
 
@@ -44,7 +50,7 @@ const registerStudent = async (req, res) => {
 
         } = req.body;
 
-        const existingUser = await pool.query(
+        const existingUser = await client.query(
 
             "SELECT * FROM users WHERE email=$1",
 
@@ -53,6 +59,8 @@ const registerStudent = async (req, res) => {
         );
 
         if (existingUser.rows.length > 0) {
+
+            client.release();
 
             return res.status(400).json({
 
@@ -72,7 +80,9 @@ const registerStudent = async (req, res) => {
 
         const verificationToken = crypto.randomBytes(32).toString("hex");
 
-        await pool.query(
+        await client.query("BEGIN");
+
+        await client.query(
 
     `
 
@@ -106,9 +116,12 @@ const registerStudent = async (req, res) => {
     ]
 
 );
+
 const verificationLink =
 `${process.env.BACKEND_URL}/api/auth/verify-email/${verificationToken}`;
 
+// If this throws, we're still inside the transaction — the catch
+// block below rolls back the INSERT above, so nothing is left stuck.
 await sendEmail(
 
     email,
@@ -137,6 +150,8 @@ await sendEmail(
     `
 );
 
+        await client.query("COMMIT");
+
         res.status(201).json({
 
     message: "Registration successful. Please check your email to verify your account."
@@ -147,13 +162,20 @@ await sendEmail(
 
     catch(err){
 
+        await client.query("ROLLBACK");
+
         console.log(err);
 
         res.status(500).json({
 
-            message:"Database Error"
+            message: "We couldn't complete registration — the verification email failed to send. Please try again in a moment."
 
         });
+
+    }
+    finally {
+
+        client.release();
 
     }
 
@@ -161,9 +183,14 @@ await sendEmail(
 
 
 
-/*  MENTOR REGISTRATION */
-
+/*  MENTOR REGISTRATION
+    Same fix — sendEmail now happens BEFORE the commit, not after.
+    Previously the transaction committed first, so a failed email left
+    a fully-created, permanently-unverifiable mentor account.
+*/
 const registerMentor = async (req,res)=>{
+
+    const client = await pool.connect();
 
     try{
 
@@ -179,7 +206,7 @@ const registerMentor = async (req,res)=>{
 
 } = req.body;
 
-        const existingUser=await pool.query(
+        const existingUser=await client.query(
 
             "SELECT * FROM users WHERE email=$1",
 
@@ -188,6 +215,8 @@ const registerMentor = async (req,res)=>{
         );
 
         if(existingUser.rows.length){
+
+            client.release();
 
             return res.status(400).json({
 
@@ -207,7 +236,9 @@ const registerMentor = async (req,res)=>{
 
         const verificationToken = crypto.randomBytes(32).toString("hex");
 
-        const user = await pool.query(
+        await client.query("BEGIN");
+
+        const user = await client.query(
 
     `
 
@@ -249,7 +280,7 @@ RETURNING user_id
     ]
 
 );
-        await pool.query(
+        await client.query(
 
 `
 
@@ -276,9 +307,12 @@ VALUES
 ]
 
 );
+
 const verificationLink =
 `${process.env.BACKEND_URL}/api/auth/verify-email/${verificationToken}`;
 
+// Moved BEFORE the commit — if this throws, the catch block rolls
+// back both INSERTs above instead of leaving a stuck mentor account.
 await sendEmail(
 
     email,
@@ -307,6 +341,9 @@ await sendEmail(
 
     `
 );
+
+        await client.query("COMMIT");
+
        res.status(201).json({
 
     message:
@@ -318,13 +355,20 @@ await sendEmail(
 
     catch(err){
 
+        await client.query("ROLLBACK");
+
         console.log(err);
 
         res.status(500).json({
 
-            message:"Database Error"
+            message:"We couldn't complete registration — the verification email failed to send. Please try again in a moment."
 
         });
+
+    }
+    finally {
+
+        client.release();
 
     }
 
@@ -668,10 +712,6 @@ const verifyEmail = async (req, res) => {
 
 };
 
-/* ============================================================
-   FORGOT PASSWORD — Step 1: request an OTP by email
-   ============================================================ */
-
 const OTP_EXPIRY_MINUTES = 10;
 const RESET_TOKEN_EXPIRY_MINUTES = 15;
 
@@ -695,9 +735,6 @@ const forgotPassword = async (req, res) => {
 
         );
 
-        // Always respond the same way whether or not the email exists,
-        // so this endpoint can't be used to check which emails are
-        // registered.
         const genericResponse = {
 
             message: "If that email is registered, an OTP has been sent to it."
@@ -710,7 +747,7 @@ const forgotPassword = async (req, res) => {
 
         }
 
-        const otp = String(Math.floor(100000 + Math.random() * 900000)); // 6 digits
+        const otp = String(Math.floor(100000 + Math.random() * 900000));
 
         const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
@@ -753,13 +790,6 @@ const forgotPassword = async (req, res) => {
     }
 
 };
-
-/* ============================================================
-   FORGOT PASSWORD — Step 2: verify the OTP, issue a short-lived
-   reset token that step 3 must present (so nobody can call
-   reset-password on an email without having proven they got the
-   OTP in their inbox).
-   ============================================================ */
 
 const verifyOtp = async (req, res) => {
 
@@ -831,11 +861,6 @@ const verifyOtp = async (req, res) => {
     }
 
 };
-
-/* ============================================================
-   FORGOT PASSWORD — Step 3: set the new password, given the
-   reset_token issued by verifyOtp.
-   ============================================================ */
 
 const resetPassword = async (req, res) => {
 
