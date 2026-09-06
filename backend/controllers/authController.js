@@ -29,10 +29,11 @@ const getCookieOptions = () => {
 };
 
 /*  STUDENT REGISTRATION
-    Wrapped in a transaction now: the user row is only committed if the
-    verification email actually sends. If sendEmail throws (e.g. an SMTP
-    timeout), everything rolls back — no orphaned unverifiable account,
-    and the person can just try registering again cleanly.
+    NOTE: client.release() is called ONLY in the `finally` block below —
+    `finally` runs on every exit path (normal return, early return, or
+    thrown error), so calling release() again in an early return as well
+    double-releases the same client and throws "Release called on client
+    which has already been released to the pool."
 */
 const registerStudent = async (req, res) => {
 
@@ -59,8 +60,6 @@ const registerStudent = async (req, res) => {
         );
 
         if (existingUser.rows.length > 0) {
-
-            client.release();
 
             return res.status(400).json({
 
@@ -120,8 +119,6 @@ const registerStudent = async (req, res) => {
 const verificationLink =
 `${process.env.BACKEND_URL}/api/auth/verify-email/${verificationToken}`;
 
-// If this throws, we're still inside the transaction — the catch
-// block below rolls back the INSERT above, so nothing is left stuck.
 await sendEmail(
 
     email,
@@ -183,11 +180,7 @@ await sendEmail(
 
 
 
-/*  MENTOR REGISTRATION
-    Same fix — sendEmail now happens BEFORE the commit, not after.
-    Previously the transaction committed first, so a failed email left
-    a fully-created, permanently-unverifiable mentor account.
-*/
+/*  MENTOR REGISTRATION — same double-release fix applied. */
 const registerMentor = async (req,res)=>{
 
     const client = await pool.connect();
@@ -215,8 +208,6 @@ const registerMentor = async (req,res)=>{
         );
 
         if(existingUser.rows.length){
-
-            client.release();
 
             return res.status(400).json({
 
@@ -311,8 +302,6 @@ VALUES
 const verificationLink =
 `${process.env.BACKEND_URL}/api/auth/verify-email/${verificationToken}`;
 
-// Moved BEFORE the commit — if this throws, the catch block rolls
-// back both INSERTs above instead of leaving a stuck mentor account.
 await sendEmail(
 
     email,
