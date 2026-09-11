@@ -57,19 +57,20 @@ async function fetchMentors() {
 
 }
 
-/* COMPANY FILTER */
-
+/* COMPANY FILTER — company now lives on latest_company (from a mentor's
+   most recent journey), not directly on the mentor row, and may be null
+   for a mentor who hasn't submitted a journey yet. */
 function loadCompanyFilter() {
 
     const companies = [
 
         ...new Set(
 
-            mentors.map(
+            mentors
 
-                mentor => mentor.company
+                .map(mentor => mentor.latest_company)
 
-            )
+                .filter(Boolean)
 
         )
 
@@ -102,6 +103,8 @@ function renderMentors(data) {
 
     data.forEach(mentor => {
 
+        const hasJourney = Boolean(mentor.latest_company);
+
         mentorContainer.innerHTML += `
 
 
@@ -110,27 +113,25 @@ function renderMentors(data) {
 
             <h3>${mentor.full_name}</h3>
 
-            <p>${mentor.company}</p>
+            <p>${mentor.latest_company || "No journey shared yet"}</p>
 
-            <p>${mentor.role}</p>
+            <p>${mentor.latest_role || ""}</p>
 
             <p class="package">
 
-                ${mentor.package_lpa} LPA
+                ${mentor.latest_package_lpa || ""}
 
             </p>
 
             <p>
 
-                CGPA : ${mentor.cgpa}
+                CGPA : ${mentor.cgpa != null ? mentor.cgpa : "—"}
 
             </p>
 
-            <span class="type">
+            ${hasJourney ? `<span class="type">${mentor.latest_experience_type}</span>` : ""}
 
-    ${mentor.experience_type}
-
-</span>
+            ${mentor.experience_count > 1 ? `<span class="type">+${mentor.experience_count - 1} more</span>` : ""}
 
 <button
 
@@ -182,7 +183,7 @@ function filterMentors() {
 
             ||
 
-            mentor.company
+            (mentor.latest_company || "")
 
             .toLowerCase()
 
@@ -194,7 +195,7 @@ function filterMentors() {
 
             ||
 
-            mentor.company === company;
+            mentor.latest_company === company;
 
         const matchesExperience =
 
@@ -202,7 +203,7 @@ function filterMentors() {
 
             ||
 
-            mentor.experience_type === experience;
+            mentor.latest_experience_type === experience;
 
         return (
 

@@ -80,13 +80,9 @@ studentForm.addEventListener("submit", async (e) => {
 
     const email = document.getElementById("email").value.trim();
 
-    const company = document.getElementById("company").value.trim();
-
-    const role = document.getElementById("role").value.trim();
+    const branch = document.getElementById("branch").value.trim();
 
     const password = passwordInput.value;
-
-    const branch = document.getElementById("branch").value.trim();
 
     try {
 
@@ -109,10 +105,6 @@ studentForm.addEventListener("submit", async (e) => {
                     full_name,
 
                     email,
-
-                    company,
-
-                    role,
 
                     branch,
 
@@ -151,4 +143,3 @@ studentForm.addEventListener("submit", async (e) => {
     }
 
 });
-

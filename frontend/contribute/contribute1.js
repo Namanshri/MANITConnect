@@ -50,30 +50,36 @@ mentorForm.addEventListener("submit", async (e) => {
 
     }
 
-    // NOTE: this is your mentor PROFILE data (name/company/role/package/cgpa),
-    // which lives on the `mentors` table — so it goes to /api/mentor, not
-    // /api/experience (that endpoint is for the "My Journey" fields on
-    // contribute2). The old code was posting this to /api/experience, which
-    // doesn't have matching columns for any of these fields.
+    // PERSONAL fields (don't change per journey) -> mentor profile.
     const mentorProfileData = {
 
         full_name: fullName,
 
         branch,
 
+        cgpa: Number(cgpa)
+
+    };
+
+    // JOURNEY-SPECIFIC fields -> held here until contribute2's submit,
+    // where they're combined with the "My Journey" content into ONE
+    // experience row. This avoids creating a half-empty experience row
+    // if the mentor abandons the flow partway through contribute2.
+    const pendingJourney = {
+
         company,
 
         role,
 
-        package_lpa: packageLPA,
-
-        cgpa: Number(cgpa),
+        package_lpa: Number(packageLPA),
 
         experience_type: experienceType,
 
         placement_mode: placementMode
 
     };
+
+    sessionStorage.setItem("pendingJourney", JSON.stringify(pendingJourney));
 
     const submitBtn = document.getElementById("continueBtn");
     submitBtn.disabled = true;
@@ -103,8 +109,6 @@ mentorForm.addEventListener("submit", async (e) => {
             throw new Error(data.message || "Failed to save mentor profile.");
 
         }
-
-        alert("Basic details saved successfully!");
 
         window.location.href = "contribute2.html";
 

@@ -1,4 +1,4 @@
-/* CAMPUSPATH MENTOR PROFILE */
+/* MANITCONNECT MENTOR PROFILE */
 
 const BASE_URL =
     window.location.hostname === "localhost" ||
@@ -23,7 +23,6 @@ if (!mentorId) {
     mentorId = 1;
 
 }
-//console.log("Current Mentor ID:", mentorId);
 
 /* DOM ELEMENTS */
 
@@ -109,7 +108,6 @@ let currentType = "Placement";
 /*  FETCH MENTOR DATA */
 
 async function fetchMentor() {
-    
 
     try {
 
@@ -126,30 +124,33 @@ async function fetchMentor() {
         }
 
         const data = await response.json();
-        
 
 mentor = data.mentor;
 
+// Each row here carries its OWN company/role/package_lpa/experience_type
+// now — a mentor can have more than one journey.
 insights = data.insights || [];
-
-console.table(insights);
-
-
 
         mentorName.textContent = mentor.full_name;
 
-        mentorRole.textContent = mentor.role;
+        // Hero shows the most recent journey (insights is ordered
+        // newest-first). CGPA/branch stay mentor-level.
+        const latest = insights[0];
 
-        mentorCompany.textContent = mentor.company;
+        mentorRole.textContent = latest?.role || "No journey shared yet";
 
+        mentorCompany.textContent = latest?.company || "";
+
+        // package_lpa is free text (e.g. "44 LPA") — don't append " LPA"
+        // again, it's already part of what the mentor typed.
         mentorPackage.textContent =
-            `💰 ${mentor.package_lpa} LPA`;
+            latest?.package_lpa ? `💰 ${latest.package_lpa}` : "💰 —";
 
         mentorCgpa.textContent =
-            `⭐ ${mentor.cgpa} CGPA`;
+            mentor.cgpa != null ? `⭐ ${mentor.cgpa} CGPA` : "⭐ —";
 
         mentorType.textContent =
-            `🎓 ${mentor.experience_type}`;
+            latest?.experience_type ? `🎓 ${latest.experience_type}` : "🎓 —";
 
         mentorExperienceCount.textContent =
             `🧳 ${insights.length} Experience(s) Shared`;
@@ -303,6 +304,23 @@ function renderExperienceDetails(index){
 
         <h2>
 
+            ${experience.company || "Company"} — ${experience.role || "Role"}
+
+        </h2>
+
+        <p>
+
+            ${experience.package_lpa || ""}
+            ${experience.placement_mode ? " · " + experience.placement_mode : ""}
+
+        </p>
+
+    </div>
+
+    <div class="card">
+
+        <h2>
+
             Preparation Strategy
 
         </h2>
@@ -395,6 +413,13 @@ function renderExperienceDetails(index){
 
     </div>
 
+    ${experience.preparation_video_url ? `
+    <div class="card">
+        <h2>Preparation Video</h2>
+        <video controls src="${experience.preparation_video_url}" style="width:100%;border-radius:8px;"></video>
+    </div>
+    ` : ""}
+
     `;
 
     updateActiveChip(index);
@@ -451,7 +476,6 @@ async function fetchGuidance(){
         }
 
         guidanceData = await response.json();
-        console.log("Guidance:", guidanceData);
 
         renderGuidance(currentYear);
 

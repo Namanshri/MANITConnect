@@ -1,16 +1,25 @@
 const pool = require("../config/db");
 
 /*
-   CREATE EXPERIENCE ("My Journey" — preparation strategy, skills, etc.)
+   CREATE EXPERIENCE (one journey — placement or internship)
    mentor_id is looked up from the authenticated user (req.user.user_id),
-   NEVER accepted from req.body. A mentor cannot write another mentor's
-   experience just by changing an id.
+   NEVER accepted from req.body.
 */
 const createExperience = async (req, res) => {
 
     try {
 
         const {
+
+    company,
+
+    role,
+
+    package_lpa,
+
+    experience_type,
+
+    placement_mode,
 
     preparation_strategy,
 
@@ -47,12 +56,17 @@ const createExperience = async (req, res) => {
         }
 
 const mentor_id = mentor.rows[0].mentor_id;
+
         const result = await pool.query(
-            
 
             `INSERT INTO experiences
 (
     mentor_id,
+    company,
+    role,
+    package_lpa,
+    experience_type,
+    placement_mode,
     preparation_strategy,
     core_skills,
     resources,
@@ -64,7 +78,7 @@ const mentor_id = mentor.rows[0].mentor_id;
 
            VALUES
 (
-    $1,$2,$3,$4,$5,$6,$7,$8
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13
 )
 
             RETURNING *`,
@@ -72,6 +86,16 @@ const mentor_id = mentor.rows[0].mentor_id;
             [
 
     mentor_id,
+
+    company,
+
+    role,
+
+    package_lpa || null,
+
+    experience_type,
+
+    placement_mode,
 
     preparation_strategy,
 

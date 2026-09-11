@@ -1,9 +1,11 @@
 const pool = require("../config/db");
 
 /*
-   CREATE / UPDATE MENTOR PROFILE
-   mentor_id is resolved from the authenticated user's cookie (req.user),
-   NEVER from req.body — a mentor can only ever update their own profile.
+   UPDATE MENTOR PROFILE (personal fields only)
+   Company/role/package/experience_type/placement_mode are NOT here
+   anymore — those belong to a specific experience row, created via
+   POST /api/experience. user_id comes from req.user (the session
+   cookie), never from req.body.
 */
 const createMentor = async (req, res) => {
 
@@ -12,13 +14,8 @@ const createMentor = async (req, res) => {
         const {
 
             full_name,
-            company,
-            role,
             branch,
-            package_lpa,
-            cgpa,
-            experience_type,
-            placement_mode
+            cgpa
 
         } = req.body;
 
@@ -28,30 +25,17 @@ const createMentor = async (req, res) => {
 
             `UPDATE mentors
              SET
-full_name=$1,
-company=$2,
-role=$3,
-branch=$4,
-package_lpa=$5,
-cgpa=$6,
-experience_type=$7,
-placement_mode=$8
-
-
-WHERE user_id=$9
-
+                full_name = $1,
+                branch    = $2,
+                cgpa      = $3
+             WHERE user_id = $4
              RETURNING mentor_id`,
 
             [
 
                 full_name,
-                company,
-                role,
                 branch,
-                package_lpa,
-                cgpa,
-                experience_type,
-                placement_mode,
+                cgpa || null,
                 user_id
 
             ]
@@ -88,14 +72,46 @@ WHERE user_id=$9
 
     }
 
-};  
+};
+
+/*
+   All mentor cards need SOMETHING to show for company/role/package/type
+   even though those now live on experiences, not mentors. We attach the
+   mentor's most recent journey as latest_* fields, plus how many
+   journeys they've shared, via a LATERAL join.
+*/
+const LATEST_JOURNEY_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT company, role, package_lpa, experience_type, placement_mode
+        FROM experiences
+        WHERE experiences.mentor_id = mentors.mentor_id
+        ORDER BY experience_id DESC
+        LIMIT 1
+    ) latest ON true
+    LEFT JOIN LATERAL (
+        SELECT COUNT(*) AS experience_count
+        FROM experiences
+        WHERE experiences.mentor_id = mentors.mentor_id
+    ) counts ON true
+`;
+
 const getAllMentors = async (req, res) => {
 
     try {
 
         const result = await pool.query(
 
-            `SELECT * FROM mentors ORDER BY mentor_id DESC`
+            `SELECT
+                mentors.*,
+                latest.company AS latest_company,
+                latest.role AS latest_role,
+                latest.package_lpa AS latest_package_lpa,
+                latest.experience_type AS latest_experience_type,
+                latest.placement_mode AS latest_placement_mode,
+                counts.experience_count
+             FROM mentors
+             ${LATEST_JOURNEY_JOIN}
+             ORDER BY mentors.mentor_id DESC`
 
         );
 
@@ -126,13 +142,24 @@ const searchMentors = async (req, res) => {
         const result = await pool.query(
 
             `
-            SELECT *
+            SELECT
+                mentors.*,
+                latest.company AS latest_company,
+                latest.role AS latest_role,
+                latest.package_lpa AS latest_package_lpa,
+                latest.experience_type AS latest_experience_type,
+                latest.placement_mode AS latest_placement_mode,
+                counts.experience_count
             FROM mentors
+            ${LATEST_JOURNEY_JOIN}
             WHERE
-                full_name ILIKE $1
-                OR company ILIKE $1
-                OR role ILIKE $1
-            ORDER BY mentor_id DESC
+                mentors.full_name ILIKE $1
+                OR EXISTS (
+                    SELECT 1 FROM experiences
+                    WHERE experiences.mentor_id = mentors.mentor_id
+                      AND (experiences.company ILIKE $1 OR experiences.role ILIKE $1)
+                )
+            ORDER BY mentors.mentor_id DESC
             `,
 
             [`%${query}%`]
@@ -161,10 +188,11 @@ const getFilterOptions = async (req, res) => {
 
     try {
 
+        // company/role now live on experiences, not mentors
         const companies = await pool.query(
 
             `SELECT DISTINCT INITCAP(TRIM(company)) AS company
-                FROM mentors
+                FROM experiences
                 WHERE company IS NOT NULL
                 ORDER BY company;`
 
@@ -173,7 +201,7 @@ const getFilterOptions = async (req, res) => {
         const roles = await pool.query(
 
             `SELECT DISTINCT INITCAP(TRIM(role)) AS role
-FROM mentors
+FROM experiences
 WHERE role IS NOT NULL
 ORDER BY role;`
         );
@@ -230,7 +258,7 @@ const getDashboardStats = async (req, res) => {
 
         const companies = await pool.query(
 
-            `SELECT COUNT(DISTINCT company) FROM mentors
+            `SELECT COUNT(DISTINCT company) FROM experiences
              WHERE company IS NOT NULL`
 
         );
@@ -285,6 +313,10 @@ const getMentorById = async (req,res)=>{
 
         );
 
+        // Each row here now carries its OWN company/role/package_lpa/
+        // experience_type/placement_mode — this is what makes the
+        // Placement/Internship tab filter on the mentor profile page
+        // actually work.
         const insights=await pool.query(
 
             `SELECT *
