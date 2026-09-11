@@ -32,15 +32,15 @@
 
 <li><a href="../Dashboard/dashboard.html">Dashboard</a></li>
 
-<li>insights</li>
+<li><a href="../insights/insights.html">Insights</a></li>
 
-<li>Mentors</li>
+<li><a href="mentors.html">Mentors</a></li>
 
-<li>AI Advisor</li>
+<li><a href="#" onclick="showComingSoon(); return false;">AI Advisor</a></li>
 
-<li>Community</li>
+<li><a href="#" onclick="showComingSoon(); return false;">Community</a></li>
 
-<li>Your Library</li>
+<li><a href="#" onclick="showComingSoon(); return false;">Your Library</a></li>
 
 </ul>
 
@@ -213,75 +213,10 @@ id="experienceDetails"
 
 </section>
 <!-- ================= GUIDANCE ================= -->
-
-<section id="guidanceSection" style="display:none;">
-
-<div class="year-buttons">
-
-<button
-
-class="year-btn active-year"
-
-data-year="1"
-
->
-
-1st Year
-
-</button>
-
-<button
-
-class="year-btn"
-
-data-year="2"
-
->
-
-2nd Year
-
-</button>
-
-<button
-
-class="year-btn"
-
-data-year="3"
-
->
-
-3rd Year
-
-</button>
-
-<button
-
-class="year-btn"
-
-data-year="4"
-
->
-
-4th Year
-
-</button>
-
-</div>
-
-<!-- Dynamic Guidance -->
-
-<div
-
-id="guidanceContent"
-
->
-
-<!-- Guidance loaded from backend -->
-
-</div>
-
-</section>
-<!-- ================= GUIDANCE ================= -->
+<!-- NOTE: this section previously appeared TWICE in this file with the
+     same IDs, which is invalid HTML — getElementById only ever finds
+     the first copy, causing inconsistent/blank behavior when switching
+     years. There is now only ONE copy. -->
 
 <section id="guidanceSection" style="display:none;">
 
@@ -394,6 +329,7 @@ Please try again later.
 
 </div>
 
+<script src="../shared/comingSoon.js"></script>
 <script src="mentor.js"></script>
 
 </body>

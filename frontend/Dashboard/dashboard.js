@@ -128,9 +128,11 @@ function populateDropdown(dropdown, items, key, defaultText) {
 }
 
 /* LATEST MENTORS
-   company/role/package_lpa now come from each mentor's most recent
-   journey (latest_company/latest_role/latest_package_lpa, from the
-   mentorController's LATERAL join) — not directly off the mentor row. */
+   company/role/package_lpa come from each mentor's most recent
+   journey (latest_company/latest_role/latest_package_lpa).
+   NOTE: only ONE action button now — "View Profile" and "View Journey"
+   both called the same openProfile() function, so the second was just
+   a confusing duplicate. */
 function renderRecentMentors(list = mentors) {
 
     recentMentors.innerHTML = "";
@@ -211,14 +213,6 @@ function renderRecentMentors(list = mentors) {
                 onclick="openProfile(${mentor.mentor_id})">
 
                 View Profile
-
-                </button>
-
-                <button
-
-                onclick="openProfile(${mentor.mentor_id})">
-
-                View Journey
 
                 </button>
 
@@ -315,8 +309,6 @@ function applyFilters(){
 
     let filtered = [...mentors];
 
-    // Search — guarded against mentors with no journey yet (no
-    // latest_company) so this can't throw on a null field anymore.
     const query = searchInput.value.trim().toLowerCase();
 
     if(query){
@@ -337,8 +329,6 @@ function applyFilters(){
 
     }
 
-    // Company
-
     if (companyFilter.value !== "") {
 
     filtered = filtered.filter(
@@ -349,8 +339,6 @@ function applyFilters(){
 
 }
 
-    // Role
-
     if (roleFilter.value !== "") {
 
     filtered = filtered.filter(
@@ -360,8 +348,6 @@ function applyFilters(){
     );
 
 }
-
-    // Package
 
     if(packageFilter.value==="50+"){
 
@@ -423,8 +409,6 @@ function applyFilters(){
 
     }
 
-    // CGPA
-
     if(cgpaFilter.value==="9+"){
 
         filtered=filtered.filter(
@@ -464,8 +448,6 @@ function applyFilters(){
         );
 
     }
-
-    // Branch
 
     if (branchFilter.value !== "") {
 
