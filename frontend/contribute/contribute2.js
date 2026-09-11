@@ -6,9 +6,16 @@ const BASE_URL =
         ? "http://localhost:5000"
         : "https://manitconnnect-2.onrender.com";
 
-/* Require a logged-in mentor. requireAuth() comes from shared/session.js —
-   include that script BEFORE this one in contribute2.html. */
 requireAuth(["mentor"]);
+
+const pendingJourney = JSON.parse(sessionStorage.getItem("pendingJourney") || "null");
+
+if (!pendingJourney) {
+
+    alert("Please start from Step 1 first.");
+    window.location.href = "contribute1.html";
+
+}
 
 const journeyBtn = document.getElementById("journeyBtn");
 
@@ -35,14 +42,6 @@ guidanceBtn.onclick = () => {
     guidanceSection.style.display = "block";
 
 };
-
-/* ============================================================
-   VIDEO UPLOAD — this is the piece that was buggy before.
-   preparationVideoUrl is ONLY ever set after Cloudinary actually
-   returns a URL. The Submit button is disabled for the entire
-   duration of the upload, so it is impossible to submit while
-   preparation_video_url is still "".
-   ============================================================ */
 
 const prepVideoBtn = document.getElementById("prepVideoBtn");
 
@@ -96,7 +95,6 @@ function uploadVideo(file, statusElement, previewElement, onComplete) {
 
     }
 
-    // Never let the old URL/preview survive a re-upload attempt.
     preparationVideoUrl = "";
     previewElement.style.display = "none";
 
@@ -123,8 +121,6 @@ function uploadVideo(file, statusElement, previewElement, onComplete) {
 
             }
 
-            // ONLY here — after a real, successful response with a real
-            // URL — do we mark the upload as complete.
             preparationVideoUrl = data.video_url;
 
             previewElement.src = data.video_url;
@@ -172,22 +168,12 @@ if (prepVideoBtn && prepVideo) {
 
 }
 
-/* ============================================================
-   GUIDANCE QUESTIONS — rendered from guidanceQuestions.js
-   (loaded as a global `guidanceQuestions` object before this file)
-   ============================================================ */
-
 const yearButtons = document.querySelectorAll(".year-btn");
 
 const guidanceContent = document.getElementById("guidanceContent");
 
 let currentGuidanceYear = 1;
 
-// Guidance answers are kept in the DOM per-year as the mentor switches
-// tabs, so nothing typed is lost — we just read every rendered
-// textarea across all years at submit time (see collectGuidanceAnswers).
-// To support that without re-rendering wiping earlier years' answers,
-// we render all four years up front instead of only the active one.
 function renderAllGuidanceYears() {
 
     guidanceContent.innerHTML = "";
@@ -287,10 +273,6 @@ function collectGuidanceAnswers() {
 
 }
 
-/* ============================================================
-   SUBMIT
-   ============================================================ */
-
 const submitBtn = document.getElementById("submitExperience");
 
 const backBtn = document.getElementById("backBtn");
@@ -314,7 +296,17 @@ submitBtn.addEventListener("click", async () => {
 
     }
 
+    if (!pendingJourney) {
+
+        alert("Please start from Step 1 first.");
+        window.location.href = "contribute1.html";
+        return;
+
+    }
+
     const experienceData = {
+
+        ...pendingJourney,
 
         preparation_strategy: document.getElementById("preparationStrategy").value.trim(),
         core_skills: document.getElementById("coreSkills").value.trim(),
@@ -322,8 +314,6 @@ submitBtn.addEventListener("click", async () => {
         interview_timeline: document.getElementById("timeline").value.trim(),
         mistakes: document.getElementById("mistakes").value.trim(),
         interview_rounds: document.getElementById("interviewRounds").value.trim(),
-        // Only ever the URL Cloudinary actually returned — never a
-        // placeholder, never sent while empty-because-still-uploading.
         preparation_video_url: preparationVideoUrl
 
     };
@@ -352,8 +342,6 @@ submitBtn.addEventListener("click", async () => {
 
         }
 
-        // Guidance answers are optional and saved one at a time —
-        // mentor_id is derived server-side from the login cookie for each.
         for (const item of guidanceAnswers) {
 
             const guidanceResponse = await fetch(`${BASE_URL}/api/guidance`, {
@@ -367,13 +355,13 @@ submitBtn.addEventListener("click", async () => {
 
             if (!guidanceResponse.ok) {
 
-                // Don't abort the whole submission over one optional
-                // guidance answer failing — log it and keep going.
                 console.error("Failed to save a guidance answer:", item);
 
             }
 
         }
+
+        sessionStorage.removeItem("pendingJourney");
 
         loadingOverlay.style.display = "none";
         successOverlay.style.display = "flex";
@@ -398,7 +386,10 @@ if (continueSuccess) {
 
     continueSuccess.addEventListener("click", () => {
 
-        window.location.href = "../dashboard/dashboard.html";
+        // NOTE: folder is "Dashboard" with a capital D in this repo —
+        // Vercel's hosting is case-sensitive (unlike Windows locally),
+        // so this needs to match exactly or it 404s in production.
+        window.location.href = "../Dashboard/dashboard.html";
 
     });
 

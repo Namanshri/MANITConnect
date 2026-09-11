@@ -36,8 +36,6 @@ loginForm.addEventListener("submit", async (e) => {
 
                 },
 
-                // credentials:"include" is what lets the browser accept
-                // and later send the HttpOnly cookie the server sets here
                 credentials: "include",
 
                 body: JSON.stringify({ email, password })
@@ -59,22 +57,13 @@ loginForm.addEventListener("submit", async (e) => {
 
         }
 
-        // Identity now lives in the HttpOnly cookie. We only use the
-        // role from this response to decide where to redirect —
-        // nothing here is stored or trusted later.
-        if (data.role === "mentor") {
-
-            window.location.href = "../mentor/mentor-dashboard.html";
-
-        } else if (data.role === "admin") {
-
-            window.location.href = "../admin/admin-dashboard.html";
-
-        } else {
-
-            window.location.href = "../dashboard/dashboard.html";
-
-        }
+        // There is no separate mentor-dashboard.html or admin-dashboard.html
+        // anywhere in the repo (checked against the actual frontend folder
+        // tree) — only one real Dashboard/dashboard.html exists, shared by
+        // everyone for now. Folder is "Dashboard" with a capital D — Vercel's
+        // hosting is case-sensitive (unlike Windows locally), so this needs
+        // to match exactly or it 404s in production, same bug as before.
+        window.location.href = "../Dashboard/dashboard.html";
 
     }
 

@@ -68,7 +68,10 @@ async function requireAuth(allowedRoles = null) {
 
         alert("You do not have permission to view this page.");
 
-        window.location.href = "../dashboard/dashboard.html";
+        // NOTE: folder is "Dashboard" with a capital D in this repo —
+        // Vercel's hosting is case-sensitive (unlike Windows locally),
+        // so this needs to match exactly or it 404s in production.
+        window.location.href = "../Dashboard/dashboard.html";
 
         return null;
 
