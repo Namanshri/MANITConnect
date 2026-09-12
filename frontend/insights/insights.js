@@ -1,4 +1,8 @@
-const BASE_URL = "https://manitconnnect-2.onrender.com";
+const BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5000"
+        : "https://manitconnnect-2.onrender.com";
 
 const params = new URLSearchParams(window.location.search);
 
@@ -11,6 +15,8 @@ const searchBox = document.getElementById("searchBox");
 const companyFilter = document.getElementById("companyFilter");
 
 const categoryFilter = document.getElementById("categoryFilter");
+
+const yearFilter = document.getElementById("yearFilter");
 
 const tagContainer = document.getElementById("tagContainer");
 
@@ -44,6 +50,8 @@ async function fetchInsights() {
         filteredInsights = insights;
 
         loadCompanyFilter();
+
+        loadYearFilter();
 
         loadTags();
 
@@ -98,6 +106,39 @@ function loadCompanyFilter() {
         option.textContent = company;
 
         companyFilter.appendChild(option);
+
+    });
+
+}
+
+/* YEAR FILTER — the calendar year the insight was POSTED (created_at),
+   so readers can tell how recent/relevant a piece of advice is. This
+   is separate from the 1st/2nd/3rd/4th "student year" used in Guidance. */
+function loadYearFilter() {
+
+    const years = [
+
+        ...new Set(
+
+            insights
+
+                .filter(insight => insight.created_at)
+
+                .map(insight => new Date(insight.created_at).getFullYear())
+
+        )
+
+    ].sort((a, b) => b - a); // most recent first
+
+    years.forEach(year => {
+
+        const option = document.createElement("option");
+
+        option.value = year;
+
+        option.textContent = year;
+
+        yearFilter.appendChild(option);
 
     });
 
@@ -245,7 +286,7 @@ function createTags(tags) {
 
 }
 
-/* SEARCH */
+/* SEARCH + FILTER */
 
 function filterInsights() {
 
@@ -260,6 +301,10 @@ function filterInsights() {
     const category =
 
         categoryFilter.value;
+
+    const year =
+
+        yearFilter.value;
 
     filteredInsights = insights.filter(insight => {
 
@@ -287,6 +332,14 @@ function filterInsights() {
 
             insight.category === category;
 
+        const yearMatch =
+
+            year === ""
+
+            ||
+
+            (insight.created_at && new Date(insight.created_at).getFullYear() === Number(year));
+
         return (
 
             titleMatch
@@ -298,6 +351,10 @@ function filterInsights() {
             &&
 
             categoryMatch
+
+            &&
+
+            yearMatch
 
         );
 
@@ -364,6 +421,14 @@ companyFilter.addEventListener(
 );
 
 categoryFilter.addEventListener(
+
+    "change",
+
+    filterInsights
+
+);
+
+yearFilter.addEventListener(
 
     "change",
 

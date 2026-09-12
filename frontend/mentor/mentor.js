@@ -127,24 +127,18 @@ async function fetchMentor() {
 
 mentor = data.mentor;
 
-// Each row here carries its OWN company/role/package_lpa/experience_type
-// now — a mentor can have more than one journey.
 insights = data.insights || [];
 
         mentorName.textContent = mentor.full_name;
 
-        // Hero shows the most recent journey (insights is ordered
-        // newest-first). CGPA/branch stay mentor-level.
         const latest = insights[0];
 
         mentorRole.textContent = latest?.role || "No journey shared yet";
 
         mentorCompany.textContent = latest?.company || "";
 
-        // package_lpa is free text (e.g. "44 LPA") — don't append " LPA"
-        // again, it's already part of what the mentor typed.
         mentorPackage.textContent =
-            latest?.package_lpa ? `💰 ${latest.package_lpa}` : "💰 —";
+            latest?.package_lpa != null ? `💰 ${latest.package_lpa} LPA` : "💰 —";
 
         mentorCgpa.textContent =
             mentor.cgpa != null ? `⭐ ${mentor.cgpa} CGPA` : "⭐ —";
@@ -310,7 +304,7 @@ function renderExperienceDetails(index){
 
         <p>
 
-            ${experience.package_lpa || ""}
+            ${experience.package_lpa != null ? experience.package_lpa + " LPA" : ""}
             ${experience.placement_mode ? " · " + experience.placement_mode : ""}
 
         </p>
@@ -614,6 +608,74 @@ function renderGuidance(year){
     });
 
 }
+
+/* ============================================================
+   INSIGHTS SIDEBAR — this mentor's own blog-style insight posts,
+   shown as a clickable list next to Journey/Guidance.
+   ============================================================ */
+
+const mentorInsightsList = document.getElementById("mentorInsightsList");
+
+async function fetchMentorInsights() {
+
+    try {
+
+        const response = await fetch(
+
+            `${BASE_URL}/api/insight/mentor/${mentorId}`
+
+        );
+
+        if (!response.ok) {
+
+            throw new Error("Unable to load insights.");
+
+        }
+
+        const mentorInsights = await response.json();
+
+        if (mentorInsights.length === 0) {
+
+            mentorInsightsList.innerHTML = `<p class="empty-note">This mentor hasn't published any insights yet.</p>`;
+
+            return;
+
+        }
+
+        mentorInsightsList.innerHTML = "";
+
+        mentorInsights.forEach((insight) => {
+
+            const preview = (insight.content || "").length > 110
+                ? insight.content.substring(0, 110) + "…"
+                : (insight.content || "");
+
+            const postedDate = insight.created_at
+                ? new Date(insight.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "short" })
+                : "";
+
+            mentorInsightsList.innerHTML += `
+                <a class="insight-row" href="../insights/insight.html?id=${insight.insight_id}">
+                    <h4>${insight.title}</h4>
+                    <div class="insight-byline">${insight.category || "Insight"}${postedDate ? " · " + postedDate : ""}</div>
+                    <div class="insight-preview">${preview}</div>
+                </a>
+            `;
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        mentorInsightsList.innerHTML = `<p class="empty-note">Unable to load insights right now.</p>`;
+
+    }
+
+}
+
 /* 
    INITIALIZE PAGE
  */
@@ -623,6 +685,8 @@ async function initializePage() {
     await fetchMentor();
 
     await fetchGuidance();
+
+    await fetchMentorInsights();
 
 }
 

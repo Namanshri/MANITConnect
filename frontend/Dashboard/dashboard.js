@@ -257,29 +257,46 @@ async function loadRecentInsights(){
 
         recentInsights.innerHTML = "";
 
+        if (insights.length === 0) {
+
+            recentInsights.innerHTML = "<p>No insights shared yet.</p>";
+            return;
+
+        }
+
         insights
 
         .slice(0,5)
 
-        .forEach(exp=>{
+        .forEach(insight=>{
+
+            const preview = (insight.content || "").length > 140
+                ? insight.content.substring(0, 140) + "…"
+                : (insight.content || "-");
+
+            const byline = [insight.full_name, insight.company]
+                .filter(Boolean)
+                .join(" · ");
 
             recentInsights.innerHTML += `
 
-            <div class="experience-card">
+            <a class="experience-card" href="../insights/insight.html?id=${insight.insight_id}" style="text-decoration:none;color:inherit;display:block;cursor:pointer;">
 
                 <h3>
 
-                    ${exp.company || exp.title || "Insight"}
+                    ${insight.title || "Insight"}
 
                 </h3>
 
+                ${byline ? `<p style="font-size:12px;color:#888;margin:2px 0 6px;">${byline}</p>` : ""}
+
                 <p>
 
-                    ${(exp.content || "").substring(0, 150) || "-"}
+                    ${preview}
 
                 </p>
 
-            </div>
+            </a>
 
             `;
 
