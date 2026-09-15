@@ -8,15 +8,8 @@ require("dotenv").config();
 
 const app = express();
 
-// Required on Render (or any host behind a reverse proxy) so secure cookies work
 app.set("trust proxy", 1);
 
-// FRONTEND_URL can now be ONE origin or a COMMA-SEPARATED LIST of
-// origins, e.g.:
-//   FRONTEND_URL=https://manit-connect.vercel.app,http://127.0.0.1:5500
-// This lets you test from Live Server locally AND from your deployed
-// Vercel URL against the same hosted backend, and makes it easy to
-// add a Vercel preview URL later without breaking the main one.
 const allowedOrigins = (process.env.FRONTEND_URL || "")
     .split(",")
     .map((origin) => origin.trim())
@@ -26,8 +19,6 @@ app.use(cors({
 
     origin: (origin, callback) => {
 
-        // requests with no Origin header (curl, Postman, server-to-server)
-        // are allowed through — they can't carry cookies anyway
         if (!origin) {
             return callback(null, true);
         }
@@ -63,6 +54,8 @@ const authRoutes = require("./routes/authRoutes");
 
 const uploadRoute = require("./routes/uploadRoute");
 
+const postRoutes = require("./routes/postRoutes");
+
 app.use("/api/mentor",mentorRoutes);
 
 app.use("/api/experience",experienceRoutes);
@@ -72,6 +65,8 @@ app.use("/api/guidance",guidanceRoutes);
 app.use("/api/insight", insightRoutes);
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/posts", postRoutes);
 
 app.get("/",(req,res)=>{
 

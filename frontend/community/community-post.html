@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MANITConnect | Community</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background: #f7f7f7;
+    color: #222;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 16px 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.navbar h1 {
+    color: #8a00ff;
+    font-size: 24px;
+    margin: 0;
+}
+
+.navbar nav {
+    display: flex;
+    gap: 28px;
+}
+
+.navbar nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.navbar nav a.active {
+    color: #8a00ff;
+    font-weight: 700;
+}
+
+.container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: #8a00ff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.post-detail {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    margin-bottom: 24px;
+}
+
+.post-meta {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.post-category {
+    background: #f1e3ff;
+    color: #8a00ff;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.post-detail h2 {
+    margin: 4px 0 12px;
+}
+
+.post-detail .post-body {
+    font-size: 15px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+.replies-heading {
+    margin: 0 0 14px;
+    font-size: 16px;
+    color: #555;
+}
+
+.reply-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.reply-card.expert {
+    border: 2px solid #1e7d32;
+}
+
+.reply-meta {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.expert-badge {
+    background: #e6fff2;
+    color: #1e7d32;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.reply-body {
+    font-size: 14.5px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.reply-form {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    margin-top: 20px;
+}
+
+.reply-form textarea {
+    width: 100%;
+    min-height: 80px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.reply-form button {
+    margin-top: 10px;
+    background: #8a00ff;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 20px 0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <h1>MANITConnect</h1>
+
+    <nav>
+        <a href="../Dashboard/dashboard.html">Dashboard</a>
+        <a href="../insights/insights.html">Insights</a>
+        <a href="../mentor/mentors.html">Mentors</a>
+        <a href="community.html" class="active">Community</a>
+    </nav>
+
+    <div id="profileMenuContainer"></div>
+
+</header>
+
+<div class="container">
+
+    <a href="community.html" class="back-link">← Back to Community</a>
+
+    <div id="postDetail" class="post-detail">
+        <p>Loading...</p>
+    </div>
+
+    <h3 class="replies-heading" id="repliesHeading"></h3>
+
+    <div id="repliesList"></div>
+
+    <div class="reply-form">
+        <textarea id="replyContent" placeholder="Write a reply..."></textarea>
+        <button id="replySubmitBtn">Reply</button>
+    </div>
+
+</div>
+
+<script src="../shared/session.js"></script>
+<script src="../shared/comingSoon.js"></script>
+<script src="../shared/profileMenu.js"></script>
+<script src="community-post.js"></script>
+
+</body>
+
+</html>

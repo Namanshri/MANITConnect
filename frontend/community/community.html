@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MANITConnect | Community</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background: #f7f7f7;
+    color: #222;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 16px 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.navbar h1 {
+    color: #8a00ff;
+    font-size: 24px;
+    margin: 0;
+}
+
+.navbar nav {
+    display: flex;
+    gap: 28px;
+}
+
+.navbar nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.navbar nav a.active {
+    color: #8a00ff;
+    font-weight: 700;
+}
+
+.container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.page-title {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.page-title h2 {
+    margin: 0 0 6px;
+}
+
+.page-title p {
+    color: #777;
+    margin: 0;
+}
+
+.search-box {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 30px;
+    border: 1px solid #ddd;
+    font-size: 15px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.compose-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    margin-bottom: 30px;
+}
+
+.compose-box textarea {
+    width: 100%;
+    min-height: 70px;
+    border: none;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.compose-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.compose-row input, .compose-row select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.compose-row input {
+    flex: 1;
+    min-width: 150px;
+}
+
+.compose-row button {
+    background: #8a00ff;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.post-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.post-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.post-meta {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.post-category {
+    background: #f1e3ff;
+    color: #8a00ff;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.post-card h3 {
+    margin: 4px 0 8px;
+    font-size: 17px;
+}
+
+.post-preview {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0 0 10px;
+}
+
+.post-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #888;
+}
+
+.expert-badge {
+    background: #e6fff2;
+    color: #1e7d32;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 40px 0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <h1>MANITConnect</h1>
+
+    <nav>
+        <a href="../Dashboard/dashboard.html">Dashboard</a>
+        <a href="../insights/insights.html">Insights</a>
+        <a href="../mentor/mentors.html">Mentors</a>
+        <a href="community.html" class="active">Community</a>
+        <a href="#" onclick="alert('Coming Soon')">Your Profile</a>
+    </nav>
+
+    <div id="profileMenuContainer"></div>
+
+</header>
+
+<div class="container">
+
+    <div class="page-title">
+        <h2>Community</h2>
+        <p>Ask a question, get answers from mentors and fellow students.</p>
+    </div>
+
+    <input type="text" id="searchBox" class="search-box" placeholder="Search questions by keyword or tag...">
+
+    <div class="compose-box">
+
+        <textarea id="postContent" placeholder="Ask the community a question..."></textarea>
+
+        <div class="compose-row">
+
+            <input type="text" id="postTitle" placeholder="Title">
+
+            <select id="postCategory">
+                <option value="">Category</option>
+                <option>DSA</option>
+                <option>Placement</option>
+                <option>Internship</option>
+                <option>Resume</option>
+                <option>HR</option>
+                <option>General</option>
+            </select>
+
+            <button id="postSubmitBtn">Post</button>
+
+        </div>
+
+    </div>
+
+    <div id="postsFeed"></div>
+
+</div>
+
+<script src="../shared/session.js"></script>
+<script src="../shared/comingSoon.js"></script>
+<script src="../shared/profileMenu.js"></script>
+<script src="community.js"></script>
+
+</body>
+
+</html>
