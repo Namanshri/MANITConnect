@@ -18,9 +18,8 @@ margin:auto;
 
 }
 
-/* NAVBAR */
-
-nav{
+/* NAVBAR — new consistent pattern, matches Mentors/Community pages */
+.navbar{
 
 display:flex;
 
@@ -28,7 +27,47 @@ justify-content:space-between;
 
 align-items:center;
 
-padding:25px 0;
+padding:18px 50px;
+
+background:white;
+
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
+
+}
+
+.navbar h1{
+
+color:#8a00ff;
+
+font-size:24px;
+
+margin:0;
+
+}
+
+.navbar nav{
+
+display:flex;
+
+gap:28px;
+
+}
+
+.navbar nav a{
+
+text-decoration:none;
+
+color:#333;
+
+font-weight:500;
+
+}
+
+.navbar nav a.active{
+
+color:#8a00ff;
+
+font-weight:700;
 
 }
 

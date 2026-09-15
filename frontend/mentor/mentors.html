@@ -27,16 +27,13 @@
 
             <a href="../contribute/contribute1.html">Become a Mentor</a>
 
-            
-            <a href="#" onclick="alert('Coming Soon')">AI Advisor</a>
+            <a href="#" onclick="showComingSoon(); return false;">AI Advisor</a>
 
             <a href="../community/community.html">Community</a>
-    
-
-            <a href="#" onclick="alert('Coming Soon')">Your Profile</a>
-
 
         </nav>
+
+        <div id="profileMenuContainer"></div>
 
     </header>
 
@@ -83,6 +80,10 @@
 
     </section>
 
+    <script src="../shared/session.js"></script>
+    <script src="../shared/comingSoon.js"></script>
+    <script src="../shared/profileMenu.js"></script>
+    <script>renderProfileMenu("profileMenuContainer");</script>
     <script src="mentors.js"></script>
 
 </body>

@@ -19,9 +19,8 @@ body{
 
 }
 
-/*  NAVBAR  */
-
-nav{
+/*  NAVBAR — new consistent pattern, matches Mentors/Community pages */
+.navbar{
 
     display:flex;
 
@@ -29,19 +28,47 @@ nav{
 
     align-items:center;
 
-    padding:20px 80px;
+    padding:18px 50px;
 
     background:white;
 
-    box-shadow:0 2px 15px rgba(0,0,0,.05);
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
 
 }
 
-.logo h1{
+.navbar h1{
 
     color:#6C63FF;
 
-    font-size:28px;
+    font-size:24px;
+
+    margin:0;
+
+}
+
+.navbar nav{
+
+    display:flex;
+
+    gap:28px;
+
+}
+
+.navbar nav a{
+
+    text-decoration:none;
+
+    color:#333;
+
+    font-weight:500;
+
+}
+
+.navbar nav a.active{
+
+    color:#6C63FF;
+
+    font-weight:700;
 
 }
 
@@ -50,32 +77,6 @@ nav{
     color:#777;
 
     font-size:14px;
-
-}
-
-nav ul{
-
-    display:flex;
-
-    list-style:none;
-
-    gap:35px;
-
-}
-
-nav ul li{
-
-    cursor:pointer;
-
-    transition:.3s;
-
-    font-weight:500;
-
-}
-
-nav ul li:hover{
-
-    color:#6C63FF;
 
 }
 
@@ -455,8 +456,9 @@ nav ul li:hover{
 
     background:white;
 
-    padding:30
-        border-radius:18px;
+    padding:30px;
+
+    border-radius:18px;
 
     box-shadow:0 10px 30px rgba(0,0,0,.08);
 
@@ -528,7 +530,7 @@ footer{
 
 @media(max-width:900px){
 
-    nav{
+    .navbar{
 
         flex-direction:column;
 
@@ -538,7 +540,7 @@ footer{
 
     }
 
-    nav ul{
+    .navbar nav{
 
         flex-wrap:wrap;
 

@@ -22,47 +22,29 @@
 
 <div class="container">
 
-    <!--  NAVBAR  -->
+    <!--  NAVBAR — new consistent pattern -->
 
-    <nav>
+    <header class="navbar">
 
-        <div class="logo">
+        <h1>MANITConnect</h1>
 
-            <h1>MANITConnect</h1>
+        <nav>
 
-            <p>Premium Career Guidance</p>
+            <a href="../Dashboard/dashboard.html">Dashboard</a>
 
-        </div>
+            <a href="../insights/insights.html">Insights</a>
 
-       <ul>
+            <a href="../mentor/mentors.html">Mentors</a>
 
-    <li>
-        <a href="../Dashboard/dashboard.html">Dashboard</a>
-    </li>
+            <a href="#" onclick="showComingSoon(); return false;">AI Advisor</a>
 
-    <li>
-        <a href="../insights/insights.html">Insights</a>
-    </li>
+            <a href="../community/community.html">Community</a>
 
-    <li>
-        <a href="../mentor/mentors.html">Mentors</a>
-    </li>
+        </nav>
 
-    <li>
-        <a href="#" onclick="alert('Coming Soon')">AI Advisor</a>
-    </li>
+        <div id="profileMenuContainer"></div>
 
-    <li>
-        <a href="../community/community.html">Community</a>
-    </li>
-
-    <li>
-        <a href="#" onclick="alert('Coming Soon')">Your Profile</a>
-    </li>
-
-</ul>
-
-    </nav>
+    </header>
 
     <!--  HERO  -->
 
@@ -484,6 +466,10 @@ required>
 
 </div><!-- JAVASCRIPT  -->
 
+<script src="../shared/session.js"></script>
+<script src="../shared/comingSoon.js"></script>
+<script src="../shared/profileMenu.js"></script>
+<script>renderProfileMenu("profileMenuContainer");</script>
 <script src="contribute1.js"></script>
 
 </body>

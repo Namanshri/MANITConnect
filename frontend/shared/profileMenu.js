@@ -20,7 +20,6 @@ async function renderProfileMenu(containerId) {
 
     if (!user) {
 
-        // Not logged in — show a plain Login link instead of a profile menu.
         container.innerHTML = `<a href="../auth/login.html" style="font-weight:600;color:#8a00ff;text-decoration:none;">Login</a>`;
         return;
 
@@ -47,7 +46,7 @@ async function renderProfileMenu(containerId) {
                 <div style="font-weight:600; font-size:14px; color:#222;">${user.full_name}</div>
                 <div style="font-size:12px; color:#999; text-transform:capitalize;">${user.role}</div>
             </div>
-            <a id="profileMenuLibrary" href="#" style="
+            <a id="profileMenuLibrary" href="../library/library.html" style="
                 display:block; padding:12px 16px; color:#333; text-decoration:none; font-size:14px;
             ">📚 Your Library</a>
             <a id="profileMenuLogout" href="#" style="
@@ -67,11 +66,6 @@ async function renderProfileMenu(containerId) {
 
     document.addEventListener("click", () => {
         dropdown.style.display = "none";
-    });
-
-    document.getElementById("profileMenuLibrary").addEventListener("click", (e) => {
-        e.preventDefault();
-        showComingSoon("Your Library is coming soon!");
     });
 
     document.getElementById("profileMenuLogout").addEventListener("click", (e) => {

@@ -23,47 +23,29 @@
 
 <div class="container">
 
-<!-- NAVBAR  -->
+<!-- NAVBAR — new consistent pattern -->
 
-<nav>
+<header class="navbar">
 
-    <div class="logo">
+    <h1>MANITConnect</h1>
 
-        <h1>MANITConnect</h1>
+    <nav>
 
-        <p>Premium Guidance</p>
+        <a href="../Dashboard/dashboard.html">Dashboard</a>
 
-    </div>
-
-   <ul>
-
-    <li>
-        <a href="../dashboard/dashboard.html">Dashboard</a>
-    </li>
-
-    <li>
         <a href="../insights/insights.html">Insights</a>
-    </li>
 
-    <li>
         <a href="../mentor/mentors.html">Mentors</a>
-    </li>
 
-    <li>
-        <a href="#" onclick="alert('Coming Soon')">AI Advisor</a>
-    </li>
+        <a href="#" onclick="showComingSoon(); return false;">AI Advisor</a>
 
-    <li>
         <a href="../community/community.html">Community</a>
-    </li>
 
-    <li>
-        <a href="#" onclick="alert('Coming Soon')">Your Profile</a>
-    </li>
+    </nav>
 
-</ul>
+    <div id="profileMenuContainer"></div>
 
-</nav>
+</header>
 
 <!-- HERO  -->
 
@@ -131,7 +113,7 @@ placeholder="How did you prepare?"
 <button
 class="audio-btn"
 type="button"
-onclick="alert('Audio Recording Coming Soon')">
+onclick="showComingSoon('Audio recording is coming soon!'); return false;">
 
 🎙️ Record Audio
 
@@ -196,7 +178,7 @@ style="display:none">
         <button
 class="audio-btn"
 type="button"
-onclick="alert('Audio Recording Coming Soon')">
+onclick="showComingSoon('Audio recording is coming soon!'); return false;">
 
 🎙️ Record Audio
 
@@ -205,7 +187,7 @@ onclick="alert('Audio Recording Coming Soon')">
         <button
 class="video-btn"
 type="button"
-onclick="alert('Video Upload Coming Soon')">
+onclick="showComingSoon('Per-section video upload is coming soon! Use the Preparation Strategy video for now.'); return false;">
 
 📎 Add Video
 
@@ -256,7 +238,7 @@ onclick="alert('Video Upload Coming Soon')">
         <button
 class="audio-btn"
 type="button"
-onclick="alert('Audio Recording Coming Soon')">
+onclick="showComingSoon('Audio recording is coming soon!'); return false;">
 
 🎙️ Record Audio
 
@@ -265,7 +247,7 @@ onclick="alert('Audio Recording Coming Soon')">
         <button
 class="video-btn"
 type="button"
-onclick="alert('Video Upload Coming Soon')">
+onclick="showComingSoon('Per-section video upload is coming soon! Use the Preparation Strategy video for now.'); return false;">
 
 📎 Add Video
 
@@ -316,7 +298,7 @@ onclick="alert('Video Upload Coming Soon')">
         <button
 class="audio-btn"
 type="button"
-onclick="alert('Audio Recording Coming Soon')">
+onclick="showComingSoon('Audio recording is coming soon!'); return false;">
 
 🎙️ Record Audio
 
@@ -325,7 +307,7 @@ onclick="alert('Audio Recording Coming Soon')">
         <button
 class="video-btn"
 type="button"
-onclick="alert('Video Upload Coming Soon')">
+onclick="showComingSoon('Per-section video upload is coming soon! Use the Preparation Strategy video for now.'); return false;">
 
 📎 Add Video
 
@@ -376,7 +358,7 @@ onclick="alert('Video Upload Coming Soon')">
         <button
 class="audio-btn"
 type="button"
-onclick="alert('Audio Recording Coming Soon')">
+onclick="showComingSoon('Audio recording is coming soon!'); return false;">
 
 🎙️ Record Audio
 
@@ -385,7 +367,7 @@ onclick="alert('Audio Recording Coming Soon')">
        <button
 class="video-btn"
 type="button"
-onclick="alert('Video Upload Coming Soon')">
+onclick="showComingSoon('Per-section video upload is coming soon! Use the Preparation Strategy video for now.'); return false;">
 
 📎 Add Video
 
@@ -436,7 +418,7 @@ onclick="alert('Video Upload Coming Soon')">
        <button
 class="audio-btn"
 type="button"
-onclick="alert('Audio Recording Coming Soon')">
+onclick="showComingSoon('Audio recording is coming soon!'); return false;">
 
 🎙️ Record Audio
 
@@ -445,7 +427,7 @@ onclick="alert('Audio Recording Coming Soon')">
         <button
 class="video-btn"
 type="button"
-onclick="alert('Video Upload Coming Soon')">
+onclick="showComingSoon('Per-section video upload is coming soon! Use the Preparation Strategy video for now.'); return false;">
 
 📎 Add Video
 
@@ -639,6 +621,10 @@ style="display:none;">
 
 </div>
 <!--  JAVASCRIPT  -->
+<script src="../shared/session.js"></script>
+<script src="../shared/comingSoon.js"></script>
+<script src="../shared/profileMenu.js"></script>
+<script>renderProfileMenu("profileMenuContainer");</script>
 <script src="guidanceQuestions.js"></script>
 
 <script src="contribute2.js?v=20260807-file-link"></script>

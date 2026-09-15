@@ -42,9 +42,7 @@ const createPost = async (req, res) => {
    ?search=keyword  (matches title/content/category/tags)
    ?category=DSA    (exact category filter)
    Each post includes the author's name/role, a reply count, and
-   whether any mentor has replied (has_expert_answer) — this is the
-   "shows if a mentor has answered" indicator on the feed, before
-   opening the post.
+   whether any mentor has replied (has_expert_answer).
 */
 const getAllPosts = async (req, res) => {
 
@@ -110,8 +108,7 @@ const getAllPosts = async (req, res) => {
 
 };
 
-/* GET ONE POST + all its replies, each tagged with the replier's role
-   so the frontend can show an "Expert Answer" badge on mentor replies. */
+/* GET ONE POST + all its replies, mentor replies pinned first */
 const getPostById = async (req, res) => {
 
     try {
@@ -168,8 +165,7 @@ const getPostById = async (req, res) => {
 
 };
 
-/* ADD A REPLY — any logged-in user. user_id comes from the session,
-   never trusted from the request body. */
+/* ADD A REPLY — any logged-in user, user_id from session only */
 const createComment = async (req, res) => {
 
     try {

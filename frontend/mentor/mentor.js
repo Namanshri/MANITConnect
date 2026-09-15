@@ -6,8 +6,6 @@ const BASE_URL =
         ? "http://localhost:5000"
         : "https://manitconnnect-2.onrender.com";
 
-/*  GET MENTOR ID */
-
 const params = new URLSearchParams(window.location.search);
 
 let mentorId = params.get("id");
@@ -24,98 +22,46 @@ if (!mentorId) {
 
 }
 
-/* DOM ELEMENTS */
-
 const mentorName = document.getElementById("mentorName");
-
 const mentorRole = document.getElementById("mentorRole");
-
 const mentorCompany = document.getElementById("mentorCompany");
-
 const mentorPackage = document.getElementById("mentorPackage");
-
 const mentorCgpa = document.getElementById("mentorCgpa");
-
 const mentorType = document.getElementById("mentorType");
+const mentorExperienceCount = document.getElementById("mentorExperienceCount");
+const experienceChips = document.getElementById("experienceChips");
+const experienceDetails = document.getElementById("experienceDetails");
 
-const mentorExperienceCount =
-
-document.getElementById("mentorExperienceCount");
-
-const experienceChips =
-
-document.getElementById("experienceChips");
-
-const experienceDetails =
-
-document.getElementById("experienceDetails");
-
-/*  PAGE TOGGLE */
-
-const journeyBtn =
-
-document.getElementById("journeyBtn");
-
-const guidanceBtn =
-
-document.getElementById("guidanceBtn");
-
-const journeySection =
-
-document.getElementById("journeySection");
-
-const guidanceSection =
-
-document.getElementById("guidanceSection");
+const journeyBtn = document.getElementById("journeyBtn");
+const guidanceBtn = document.getElementById("guidanceBtn");
+const journeySection = document.getElementById("journeySection");
+const guidanceSection = document.getElementById("guidanceSection");
 
 journeyBtn.onclick = () => {
-
     journeyBtn.classList.add("active");
-
     guidanceBtn.classList.remove("active");
-
     journeySection.style.display = "block";
-
     guidanceSection.style.display = "none";
-
 };
 
 guidanceBtn.onclick = () => {
-
     guidanceBtn.classList.add("active");
-
     journeyBtn.classList.remove("active");
-
     journeySection.style.display = "none";
-
     guidanceSection.style.display = "block";
-
 };
 
-/* DATA */
-
 let mentor = {};
-
 let insights = [];
-
 let placementinsights = [];
-
 let internshipinsights = [];
-
 let currentType = "Placement";
-
-
-/*  FETCH MENTOR DATA */
 
 async function fetchMentor() {
 
     try {
 
-        const response = await fetch(
-
-            `${BASE_URL}/api/mentor/${mentorId}`
-
-        );
+        const response = await fetch(`${BASE_URL}/api/mentor/${mentorId}`);
 
         if (!response.ok) {
 
@@ -125,41 +71,22 @@ async function fetchMentor() {
 
         const data = await response.json();
 
-mentor = data.mentor;
-
-insights = data.insights || [];
+        mentor = data.mentor;
+        insights = data.insights || [];
 
         mentorName.textContent = mentor.full_name;
 
         const latest = insights[0];
 
         mentorRole.textContent = latest?.role || "No journey shared yet";
-
         mentorCompany.textContent = latest?.company || "";
+        mentorPackage.textContent = latest?.package_lpa != null ? `💰 ${latest.package_lpa} LPA` : "💰 —";
+        mentorCgpa.textContent = mentor.cgpa != null ? `⭐ ${mentor.cgpa} CGPA` : "⭐ —";
+        mentorType.textContent = latest?.experience_type ? `🎓 ${latest.experience_type}` : "🎓 —";
+        mentorExperienceCount.textContent = `🧳 ${insights.length} Experience(s) Shared`;
 
-        mentorPackage.textContent =
-            latest?.package_lpa != null ? `💰 ${latest.package_lpa} LPA` : "💰 —";
-
-        mentorCgpa.textContent =
-            mentor.cgpa != null ? `⭐ ${mentor.cgpa} CGPA` : "⭐ —";
-
-        mentorType.textContent =
-            latest?.experience_type ? `🎓 ${latest.experience_type}` : "🎓 —";
-
-        mentorExperienceCount.textContent =
-            `🧳 ${insights.length} Experience(s) Shared`;
-
-        placementinsights = insights.filter(
-
-    item => item.experience_type === "Placement"
-
-);
-
-internshipinsights = insights.filter(
-
-    item => item.experience_type === "Internship"
-
-);
+        placementinsights = insights.filter(item => item.experience_type === "Placement");
+        internshipinsights = insights.filter(item => item.experience_type === "Internship");
 
         renderExperienceChips();
 
@@ -168,108 +95,58 @@ internshipinsights = insights.filter(
     catch (error) {
 
         console.error(error);
-
         alert("Unable to load mentor profile.");
 
     }
 
 }
-/*  EXPERIENCE TOGGLE */
 
-const placementBtn =
-
-document.getElementById("placementBtn");
-
-const internshipBtn =
-
-document.getElementById("internshipBtn");
+const placementBtn = document.getElementById("placementBtn");
+const internshipBtn = document.getElementById("internshipBtn");
 
 placementBtn.onclick = () => {
-
     currentType = "Placement";
-
     placementBtn.classList.add("active-exp");
-
     internshipBtn.classList.remove("active-exp");
-
     renderExperienceChips();
-
 };
 
 internshipBtn.onclick = () => {
-
     currentType = "Internship";
-
     internshipBtn.classList.add("active-exp");
-
     placementBtn.classList.remove("active-exp");
-
     renderExperienceChips();
-
 };
-/* RENDER EXPERIENCE CHIPS*/
 
 function renderExperienceChips() {
 
     experienceChips.innerHTML = "";
 
-    const list =
+    const list = currentType === "Placement" ? placementinsights : internshipinsights;
 
-        currentType === "Placement"
+    if (list.length === 0) {
 
-        ? placementinsights
-
-        : internshipinsights;
-
-    if(list.length===0){
-
-        experienceDetails.innerHTML=`
-
+        experienceDetails.innerHTML = `
         <div class="card">
-
-            <h2>
-
-                No ${currentType} Experience Found
-
-            </h2>
-
-            <p>
-
-                This mentor hasn't shared any ${currentType.toLowerCase()} insights yet.
-
-            </p>
-
+            <h2>No ${currentType} Experience Found</h2>
+            <p>This mentor hasn't shared any ${currentType.toLowerCase()} insights yet.</p>
         </div>
-
         `;
-
         return;
 
     }
 
-    list.forEach((experience,index)=>{
+    list.forEach((experience, index) => {
 
-        const chip=document.createElement("button");
+        const chip = document.createElement("button");
+        chip.className = "chip";
+        chip.innerText = experience.company || `${currentType} ${index + 1}`;
 
-        chip.className="chip";
-
-        chip.innerText=
-
-            experience.company ||
-
-            `${currentType} ${index+1}`;
-
-        if(index===0){
-
+        if (index === 0) {
             chip.classList.add("active-chip");
-
         }
 
-        chip.onclick=()=>{
-
-            renderExperienceDetails(index);
-
-        };
+        chip.onclick = () => renderExperienceDetails(index);
 
         experienceChips.appendChild(chip);
 
@@ -278,134 +155,29 @@ function renderExperienceChips() {
     renderExperienceDetails(0);
 
 }
-/*  EXPERIENCE DETAILS */
 
-function renderExperienceDetails(index){
+function renderExperienceDetails(index) {
 
-    const list=
+    const list = currentType === "Placement" ? placementinsights : internshipinsights;
+    const experience = list[index];
 
-        currentType==="Placement"
-
-        ? placementinsights
-
-        : internshipinsights;
-
-    const experience=list[index];
-
-    experienceDetails.innerHTML=`
+    experienceDetails.innerHTML = `
 
     <div class="card">
-
-        <h2>
-
-            ${experience.company || "Company"} — ${experience.role || "Role"}
-
-        </h2>
-
+        <h2>${experience.company || "Company"} — ${experience.role || "Role"}</h2>
         <p>
-
             ${experience.package_lpa != null ? experience.package_lpa + " LPA" : ""}
             ${experience.placement_mode ? " · " + experience.placement_mode : ""}
-
         </p>
-
+        <div class="card-actions" id="expBookmark-${experience.experience_id}"></div>
     </div>
 
-    <div class="card">
-
-        <h2>
-
-            Preparation Strategy
-
-        </h2>
-
-        <p>
-
-            ${experience.preparation_strategy || "-"}
-
-        </p>
-
-    </div>
-
-    <div class="card">
-
-        <h2>
-
-            Core Skills
-
-        </h2>
-
-        <p>
-
-            ${experience.core_skills || "-"}
-
-        </p>
-
-    </div>
-
-    <div class="card">
-
-        <h2>
-
-            Resources Used
-
-        </h2>
-
-        <p>
-
-            ${experience.resources || "-"}
-
-        </p>
-
-    </div>
-
-    <div class="card">
-
-        <h2>
-
-            Interview Timeline
-
-        </h2>
-
-        <p>
-
-            ${experience.interview_timeline || "-"}
-
-        </p>
-
-    </div>
-
-    <div class="card">
-
-        <h2>
-
-            Mistakes To Avoid
-
-        </h2>
-
-        <p>
-
-            ${experience.mistakes || "-"}
-
-        </p>
-
-    </div>
-
-    <div class="card">
-
-        <h2>
-
-            Interview Rounds
-
-        </h2>
-
-        <p>
-
-            ${experience.interview_rounds || "-"}
-
-        </p>
-
-    </div>
+    <div class="card"><h2>Preparation Strategy</h2><p>${experience.preparation_strategy || "-"}</p></div>
+    <div class="card"><h2>Core Skills</h2><p>${experience.core_skills || "-"}</p></div>
+    <div class="card"><h2>Resources Used</h2><p>${experience.resources || "-"}</p></div>
+    <div class="card"><h2>Interview Timeline</h2><p>${experience.interview_timeline || "-"}</p></div>
+    <div class="card"><h2>Mistakes To Avoid</h2><p>${experience.mistakes || "-"}</p></div>
+    <div class="card"><h2>Interview Rounds</h2><p>${experience.interview_rounds || "-"}</p></div>
 
     ${experience.preparation_video_url ? `
     <div class="card">
@@ -416,54 +188,41 @@ function renderExperienceDetails(index){
 
     `;
 
+    // Bookmark the WHOLE experience — one button on the header card.
+    renderBookmarkButton(
+        document.getElementById(`expBookmark-${experience.experience_id}`),
+        "experience",
+        experience.experience_id
+    );
+
     updateActiveChip(index);
 
 }
-/* ACTIVE CHIP */
 
-function updateActiveChip(index){
+function updateActiveChip(index) {
 
-    const chips=document.querySelectorAll(".chip");
+    const chips = document.querySelectorAll(".chip");
 
-    chips.forEach((chip,i)=>{
-
+    chips.forEach((chip, i) => {
         chip.classList.remove("active-chip");
-
-        if(i===index){
-
-            chip.classList.add("active-chip");
-
-        }
-
+        if (i === index) chip.classList.add("active-chip");
     });
 
 }
-/*  GUIDANCE */
 
-const yearButtons =
-
-document.querySelectorAll(".year-btn");
-
-const guidanceContent =
-
-document.getElementById("guidanceContent");
+const yearButtons = document.querySelectorAll(".year-btn");
+const guidanceContent = document.getElementById("guidanceContent");
 
 let guidanceData = [];
-
 let currentYear = 1;
-/* FETCH GUIDANCE */
 
-async function fetchGuidance(){
+async function fetchGuidance() {
 
-    try{
+    try {
 
-        const response = await fetch(
+        const response = await fetch(`${BASE_URL}/api/guidance/${mentorId}`);
 
-            `${BASE_URL}/api/guidance/${mentorId}`
-
-        );
-
-        if(!response.ok){
+        if (!response.ok) {
 
             throw new Error("Unable to load guidance.");
 
@@ -475,144 +234,88 @@ async function fetchGuidance(){
 
     }
 
-    catch(error){
+    catch (error) {
 
         console.log(error);
 
     }
 
 }
-/* YEAR BUTTONS */
 
-yearButtons.forEach((button)=>{
+yearButtons.forEach((button) => {
 
-    button.onclick=()=>{
+    button.onclick = () => {
 
-        yearButtons.forEach((btn)=>{
-
-            btn.classList.remove("active-year");
-
-        });
-
+        yearButtons.forEach((btn) => btn.classList.remove("active-year"));
         button.classList.add("active-year");
 
         currentYear = Number(button.dataset.year);
-
         renderGuidance(currentYear);
 
     };
 
 });
-/* RENDER GUIDANCE */
 
-function renderGuidance(year){
+function renderGuidance(year) {
 
-    guidanceContent.innerHTML="";
+    guidanceContent.innerHTML = "";
 
-    const filtered = guidanceData.filter(
+    const filtered = guidanceData.filter(item => Number(item.year) === Number(year));
 
-    item => Number(item.year) === Number(year)
+    if (filtered.length === 0) {
 
-);
-
-    if(filtered.length===0){
-
-        guidanceContent.innerHTML=`
-
+        guidanceContent.innerHTML = `
         <div class="card">
-
-            <h2>
-
-                No Guidance Available
-
-            </h2>
-
-            <p>
-
-                This mentor has not shared guidance for this year.
-
-            </p>
-
+            <h2>No Guidance Available</h2>
+            <p>This mentor has not shared guidance for this year.</p>
         </div>
-
         `;
-
         return;
 
     }
 
-    filtered.forEach((item)=>{
+    filtered.forEach((item) => {
 
         guidanceContent.innerHTML += `
-
         <div class="accordion">
-
             <div class="accordion-header">
-
-                <h3>
-
-                    ▼ ${item.category}
-
-                </h3>
-
+                <h3>▼ ${item.category}</h3>
             </div>
-
             <div class="question-box">
-
                 <div class="question">
-
-                    <p>
-
-                        ${item.question}
-
-                    </p>
-
-                    <div class="answer">
-
-                        ${item.answer}
-
-                    </div>
-
+                    <p>${item.question}</p>
+                    <div class="answer">${item.answer}</div>
+                    <div class="card-actions guidance-answer-row" id="guidanceBookmark-${item.guidance_id}"></div>
                 </div>
-
             </div>
-
         </div>
-
         `;
 
     });
 
-    document
+    document.querySelectorAll(".accordion-header").forEach((header) => {
 
-    .querySelectorAll(".accordion-header")
+        header.onclick = () => {
 
-    .forEach((header)=>{
-
-        header.onclick=()=>{
-
-            const box=
-
-            header.nextElementSibling;
-
-            box.style.display=
-
-            box.style.display==="block"
-
-            ? "none"
-
-            : "block";
+            const box = header.nextElementSibling;
+            box.style.display = box.style.display === "block" ? "none" : "block";
 
         };
 
     });
 
-}
+    // Bookmark EACH guidance answer individually.
+    filtered.forEach((item) => {
 
-/* ============================================================
-   INSIGHTS SIDEBAR — this mentor's own blog-style insight posts,
-   shown as a clickable list next to Journey/Guidance.
-   ============================================================ */
+        renderBookmarkButton(
+            document.getElementById(`guidanceBookmark-${item.guidance_id}`),
+            "guidance",
+            item.guidance_id
+        );
+
+    });
+
+}
 
 const mentorInsightsList = document.getElementById("mentorInsightsList");
 
@@ -620,11 +323,7 @@ async function fetchMentorInsights() {
 
     try {
 
-        const response = await fetch(
-
-            `${BASE_URL}/api/insight/mentor/${mentorId}`
-
-        );
+        const response = await fetch(`${BASE_URL}/api/insight/mentor/${mentorId}`);
 
         if (!response.ok) {
 
@@ -637,7 +336,6 @@ async function fetchMentorInsights() {
         if (mentorInsights.length === 0) {
 
             mentorInsightsList.innerHTML = `<p class="empty-note">This mentor hasn't published any insights yet.</p>`;
-
             return;
 
         }
@@ -654,13 +352,24 @@ async function fetchMentorInsights() {
                 ? new Date(insight.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "short" })
                 : "";
 
-            mentorInsightsList.innerHTML += `
-                <a class="insight-row" href="../insights/insight.html?id=${insight.insight_id}">
+            const row = document.createElement("div");
+            row.className = "insight-row";
+            row.innerHTML = `
+                <a href="../insights/insight.html?id=${insight.insight_id}" style="text-decoration:none;color:inherit;">
                     <h4>${insight.title}</h4>
                     <div class="insight-byline">${insight.category || "Insight"}${postedDate ? " · " + postedDate : ""}</div>
                     <div class="insight-preview">${preview}</div>
                 </a>
+                <div class="card-actions" id="insightBookmark-${insight.insight_id}"></div>
             `;
+
+            mentorInsightsList.appendChild(row);
+
+            renderBookmarkButton(
+                row.querySelector(`#insightBookmark-${insight.insight_id}`),
+                "insight",
+                insight.insight_id
+            );
 
         });
 
@@ -669,68 +378,18 @@ async function fetchMentorInsights() {
     catch (error) {
 
         console.error(error);
-
         mentorInsightsList.innerHTML = `<p class="empty-note">Unable to load insights right now.</p>`;
 
     }
 
 }
 
-/* 
-   INITIALIZE PAGE
- */
-
 async function initializePage() {
 
     await fetchMentor();
-
     await fetchGuidance();
-
     await fetchMentorInsights();
 
 }
 
 initializePage();
-
-
-/* 
-   LOADING & ERROR UI
- */
-
-function showLoading() {
-
-    const loading = document.getElementById("loadingOverlay");
-
-    if (loading) {
-
-        loading.style.display = "flex";
-
-    }
-
-}
-
-function hideLoading() {
-
-    const loading = document.getElementById("loadingOverlay");
-
-    if (loading) {
-
-        loading.style.display = "none";
-
-    }
-
-}
-
-function showError(message) {
-
-    const errorBox = document.getElementById("errorBox");
-
-    if (errorBox) {
-
-        errorBox.style.display = "block";
-
-        errorBox.querySelector("p").textContent = message;
-
-    }
-
-}

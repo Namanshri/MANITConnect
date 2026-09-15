@@ -56,6 +56,8 @@ const uploadRoute = require("./routes/uploadRoute");
 
 const postRoutes = require("./routes/postRoutes");
 
+const bookmarkRoutes = require("./routes/bookmarkRoutes");
+
 app.use("/api/mentor",mentorRoutes);
 
 app.use("/api/experience",experienceRoutes);
@@ -67,6 +69,8 @@ app.use("/api/insight", insightRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use("/api/posts", postRoutes);
+
+app.use("/api/bookmarks", bookmarkRoutes);
 
 app.get("/",(req,res)=>{
 

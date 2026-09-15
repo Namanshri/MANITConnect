@@ -10,8 +10,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- Scoped styles for the new insights sidebar only — doesn't touch
-     any existing mentor.css classes, so it can't conflict with them. -->
 <style>
 .profile-layout {
     display: flex;
@@ -44,31 +42,18 @@
     text-decoration: none;
     color: inherit;
 }
-.insight-row:last-child {
-    border-bottom: none;
-}
-.insight-row h4 {
-    margin: 0 0 4px;
-    font-size: 14.5px;
-    color: #222;
-}
-.insight-row .insight-byline {
-    font-size: 12px;
-    color: #999;
-    margin-bottom: 4px;
-}
+.insight-row:last-child { border-bottom: none; }
+.insight-row h4 { margin: 0 0 4px; font-size: 14.5px; color: #222; }
+.insight-row .insight-byline { font-size: 12px; color: #999; margin-bottom: 4px; }
 .insight-row .insight-preview {
-    font-size: 13px;
-    color: #555;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    line-height: 1.4;
+    font-size: 13px; color: #555; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; line-height: 1.4;
 }
-.insights-sidebar .empty-note {
-    font-size: 13px;
-    color: #999;
+.insights-sidebar .empty-note { font-size: 13px; color: #999; }
+.card-actions { margin-top: 14px; }
+.guidance-answer-row {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
 }
 @media (max-width: 900px) {
     .profile-layout { flex-direction: column; }
@@ -82,9 +67,10 @@
 
 <div class="container">
 
-<!-- ================= NAVBAR ================= -->
+<!-- NAVBAR — new consistent pattern -->
+<header class="navbar" style="background:transparent;box-shadow:none;padding:25px 0;">
 
-<nav>
+<nav style="width:100%;">
 
 <div class="logo">
 
@@ -104,13 +90,15 @@
 
 <li><a href="#" onclick="showComingSoon(); return false;">AI Advisor</a></li>
 
-<li><a href="../community/community.html"; return false;">Community</a></li>
+<li><a href="../community/community.html">Community</a></li>
 
-<li><a href="#" onclick="showComingSoon(); return false;">Your Library</a></li>
+<li><div id="profileMenuContainer"></div></li>
 
 </ul>
 
 </nav>
+
+</header>
 
 <!-- ================= HERO ================= -->
 
@@ -192,181 +180,60 @@ Loading...
 
 </section>
 
-<!-- ================= MAIN LAYOUT: journey/guidance + insights sidebar ================= -->
 <div class="profile-layout">
 
 <div class="main-column">
 
-<!-- ================= TOGGLE ================= -->
-
 <section class="top-toggle">
 
-<button
+<button id="journeyBtn" class="active">My Journey</button>
 
-id="journeyBtn"
-
-class="active"
-
->
-
-My Journey
-
-</button>
-
-<button
-
-id="guidanceBtn"
-
->
-
-Guidance
-
-</button>
+<button id="guidanceBtn">Guidance</button>
 
 </section>
-
-<!-- ================= JOURNEY ================= -->
 
 <section id="journeySection">
 
-<!-- Placement | Internship -->
-
 <div class="experience-toggle">
 
-<button
+<button id="placementBtn" class="active-exp">Placements</button>
 
-id="placementBtn"
-
-class="active-exp"
-
->
-
-Placements
-
-</button>
-
-<button
-
-id="internshipBtn"
-
->
-
-Internships
-
-</button>
+<button id="internshipBtn">Internships</button>
 
 </div>
 
-<!-- Experience Chips -->
+<div id="experienceChips" class="chips"></div>
 
-<div
-
-id="experienceChips"
-
-class="chips"
-
->
-
-<!-- Generated dynamically -->
-
-</div>
-
-<!-- Experience Details -->
-
-<div
-
-id="experienceDetails"
-
->
-
-<!-- Generated dynamically -->
-
-</div>
+<div id="experienceDetails"></div>
 
 </section>
-
-<!-- ================= GUIDANCE ================= -->
 
 <section id="guidanceSection" style="display:none;">
 
 <div class="year-buttons">
 
-<button
+<button class="year-btn active-year" data-year="1">1st Year</button>
 
-class="year-btn active-year"
+<button class="year-btn" data-year="2">2nd Year</button>
 
-data-year="1"
+<button class="year-btn" data-year="3">3rd Year</button>
 
->
-
-1st Year
-
-</button>
-
-<button
-
-class="year-btn"
-
-data-year="2"
-
->
-
-2nd Year
-
-</button>
-
-<button
-
-class="year-btn"
-
-data-year="3"
-
->
-
-3rd Year
-
-</button>
-
-<button
-
-class="year-btn"
-
-data-year="4"
-
->
-
-4th Year
-
-</button>
+<button class="year-btn" data-year="4">4th Year</button>
 
 </div>
 
-<!-- Dynamic Guidance -->
-
-<div
-
-id="guidanceContent"
-
->
-
-<!-- Guidance loaded from backend -->
-
-</div>
+<div id="guidanceContent"></div>
 
 </section>
 
 </div><!-- /main-column -->
-
-<!-- ================= INSIGHTS SIDEBAR ================= -->
 
 <aside class="insights-sidebar">
 
 <h3>📝 Insights by this mentor</h3>
 
 <div id="mentorInsightsList">
-
 <p class="empty-note">Loading...</p>
-
 </div>
 
 </aside>
@@ -375,49 +242,23 @@ id="guidanceContent"
 
 </div><!-- /container -->
 
-<!-- ================= LOADING ================= -->
-
-<div
-id="loadingOverlay"
-class="loading-overlay"
-style="display:none;">
-
+<div id="loadingOverlay" class="loading-overlay" style="display:none;">
 <div class="loading-card">
-
 <div class="loader"></div>
-
-<h3>
-
-Loading Mentor Profile...
-
-</h3>
-
+<h3>Loading Mentor Profile...</h3>
+</div>
 </div>
 
+<div id="errorBox" class="error-box" style="display:none;">
+<h2>Unable to Load Mentor</h2>
+<p>Please try again later.</p>
 </div>
 
-<!-- ================= ERROR ================= -->
-
-<div
-id="errorBox"
-class="error-box"
-style="display:none;">
-
-<h2>
-
-Unable to Load Mentor
-
-</h2>
-
-<p>
-
-Please try again later.
-
-</p>
-
-</div>
-
+<script src="../shared/session.js"></script>
 <script src="../shared/comingSoon.js"></script>
+<script src="../shared/profileMenu.js"></script>
+<script src="../shared/bookmarkButton.js"></script>
+<script>renderProfileMenu("profileMenuContainer");</script>
 <script src="mentor.js"></script>
 
 </body>

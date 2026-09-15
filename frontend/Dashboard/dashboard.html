@@ -16,86 +16,30 @@ rel="stylesheet">
 
 <body>
 
+<!-- NAVBAR — same pattern as Community/Mentors now -->
+<header class="navbar">
+
+    <h1>MANITConnect</h1>
+
+    <nav>
+
+        <a href="dashboard.html" class="active">Dashboard</a>
+
+        <a href="../insights/insights.html">Insights</a>
+
+        <a href="../mentor/mentors.html">Mentors</a>
+
+        <a href="#" onclick="showComingSoon(); return false;">AI Advisor</a>
+
+        <a href="../community/community.html">Community</a>
+
+    </nav>
+
+    <div id="profileMenuContainer"></div>
+
+</header>
+
 <div class="container">
-
-<!-- NAVBAR -->
-
-<nav>
-
-<div class="logo">
-
-<h1>MANITConnect</h1>
-
-<p>Premium Guidance</p>
-
-</div>
-
-<ul>
-
-<li>
-
-<a href="dashboard.html">
-
-Dashboard
-
-</a>
-
-</li>
-
-<li>
-
-<a href="../insights/insights.html">
-
-Insights
-
-</a>
-
-</li>
-
-<li>
-
-<a href="../mentor/mentors.html">
-
-Mentors
-
-</a>
-
-</li>
-
-<li>
-
-<a href="#" onclick="alert('Coming Soon')">
-
-AI Advisor
-
-</a>
-
-</li>
-
-<li>
-
-<a href="../community/community.html">
-
-Community
-
-</a>
-
-</li>
-
-<li>
-
-<a href="#" onclick="alert('Coming Soon')">
-
-Your Library
-
-</a>
-
-</li>
-
-</ul>
-
-</nav>
-
 
 <!-- HERO -->
 
@@ -324,6 +268,11 @@ Guidance from MANIT seniors.
 
 </div>
 
+<script src="../shared/session.js"></script>
+<script src="../shared/comingSoon.js"></script>
+<script src="../shared/profileMenu.js"></script>
+<script src="../shared/bookmarkButton.js"></script>
+<script>renderProfileMenu("profileMenuContainer");</script>
 <script src="dashboard.js"></script>
 
 </body>
