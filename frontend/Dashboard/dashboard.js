@@ -108,8 +108,10 @@ function renderRecentMentors(list = mentors) {
 
         const company = mentor.latest_company || "No journey shared yet";
         const role = mentor.latest_role || "";
-        const packageLine = mentor.latest_package_lpa != null ? `${mentor.latest_package_lpa} LPA` : "—";
-        const cgpaLine = mentor.cgpa != null ? mentor.cgpa : "—";
+        const packageLine = mentor.latest_experience_type === "Internship"
+            ? (mentor.latest_stipend_monthly != null ? `₹${mentor.latest_stipend_monthly}/month` : "—")
+            : mentor.latest_package_lpa != null ? `${mentor.latest_package_lpa} LPA` : "—";
+        const cgpaLine = mentor.latest_offer_cgpa ?? mentor.cgpa ?? "—";
 
         recentMentors.innerHTML += `
 

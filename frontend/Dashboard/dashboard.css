@@ -343,6 +343,19 @@ margin-bottom:40px;
 
 }
 
+.experience-card{
+background:#fff;
+padding:22px;
+border-radius:20px;
+box-shadow:0 5px 20px rgba(0,0,0,.08);
+min-height:180px;
+transition:.3s;
+}
+
+.experience-card:hover{ transform:translateY(-5px); }
+.experience-card h3{ margin:0 0 10px; color:#222; }
+.experience-card p{ line-height:1.5; color:#555; }
+
 /* DASHBOARD STATS */
 
 .stats{

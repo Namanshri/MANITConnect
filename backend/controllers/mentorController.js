@@ -82,10 +82,13 @@ const createMentor = async (req, res) => {
 */
 const LATEST_JOURNEY_JOIN = `
     LEFT JOIN LATERAL (
-        SELECT company, role, package_lpa, experience_type, placement_mode
+        SELECT company, role, package_lpa, stipend_monthly, offer_cgpa, experience_type, placement_mode
         FROM experiences
         WHERE experiences.mentor_id = mentors.mentor_id
-        ORDER BY experience_id DESC
+        ORDER BY CASE WHEN experience_type = 'Placement' THEN 0 ELSE 1 END,
+                 CASE WHEN experience_type = 'Placement' THEN COALESCE(package_lpa, 0)
+                      ELSE COALESCE(stipend_monthly, 0) END DESC,
+                 experience_id DESC
         LIMIT 1
     ) latest ON true
     LEFT JOIN LATERAL (
@@ -106,6 +109,8 @@ const getAllMentors = async (req, res) => {
                 latest.company AS latest_company,
                 latest.role AS latest_role,
                 latest.package_lpa AS latest_package_lpa,
+                latest.stipend_monthly AS latest_stipend_monthly,
+                latest.offer_cgpa AS latest_offer_cgpa,
                 latest.experience_type AS latest_experience_type,
                 latest.placement_mode AS latest_placement_mode,
                 counts.experience_count
@@ -147,6 +152,8 @@ const searchMentors = async (req, res) => {
                 latest.company AS latest_company,
                 latest.role AS latest_role,
                 latest.package_lpa AS latest_package_lpa,
+                latest.stipend_monthly AS latest_stipend_monthly,
+                latest.offer_cgpa AS latest_offer_cgpa,
                 latest.experience_type AS latest_experience_type,
                 latest.placement_mode AS latest_placement_mode,
                 counts.experience_count

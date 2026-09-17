@@ -119,13 +119,15 @@ function renderMentors(data) {
 
             <p class="package">
 
-                ${mentor.latest_package_lpa || ""}
+                ${mentor.latest_experience_type === "Internship"
+                    ? (mentor.latest_stipend_monthly != null ? `₹${mentor.latest_stipend_monthly}/month` : "—")
+                    : (mentor.latest_package_lpa != null ? `${mentor.latest_package_lpa} LPA` : "—")}
 
             </p>
 
             <p>
 
-                CGPA : ${mentor.cgpa != null ? mentor.cgpa : "—"}
+                CGPA : ${mentor.latest_offer_cgpa ?? mentor.cgpa ?? "—"}
 
             </p>
 
