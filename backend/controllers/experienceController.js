@@ -39,6 +39,8 @@ const createExperience = async (req, res) => {
 
     preparation_video_url
 
+    ,section_videos
+
 } = req.body;
 
         const mentor = await pool.query(
@@ -80,11 +82,12 @@ const mentor_id = mentor.rows[0].mentor_id;
     mistakes,
     interview_rounds,
     preparation_video_url
+    ,section_videos
 )
 
            VALUES
 (
-    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16
 )
 
             RETURNING *`,
@@ -120,6 +123,8 @@ const mentor_id = mentor.rows[0].mentor_id;
     interview_rounds,
 
     preparation_video_url
+
+    ,section_videos || {}
 
 ]
 

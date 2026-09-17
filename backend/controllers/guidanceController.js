@@ -36,7 +36,18 @@ const createGuidance = async (req, res) => {
 
         const mentor_id = mentor.rows[0].mentor_id;
 
-        const result = await pool.query(
+        const existing = await pool.query(
+            `SELECT guidance_id FROM guidance
+             WHERE mentor_id=$1 AND year=$2 AND category=$3 AND question=$4`,
+            [mentor_id, year, category, question]
+        );
+
+        const result = existing.rows.length
+            ? await pool.query(
+                `UPDATE guidance SET answer=$1 WHERE guidance_id=$2 RETURNING *`,
+                [answer, existing.rows[0].guidance_id]
+            )
+            : await pool.query(
 
             `INSERT INTO guidance
             (

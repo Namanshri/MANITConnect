@@ -59,27 +59,29 @@ const prepVideoBtn = document.getElementById("prepVideoBtn");
 // Browser speech recognition writes the transcript into the textarea beside
 // the button; the mentor can edit it before submitting.
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-document.querySelectorAll(".audio-btn").forEach((button) => {
+function attachVoiceButton(button, textarea) {
+    let recognition = null;
     button.onclick = () => {
-        const textarea = button.closest(".card")?.querySelector("textarea");
         if (!SpeechRecognition) {
             alert("Speech-to-text is not supported by this browser. Please use Chrome or type your answer.");
             return;
         }
-        const recognition = new SpeechRecognition();
+        if (recognition) { recognition.abort(); return; }
+        recognition = new SpeechRecognition();
         recognition.lang = "en-IN";
         recognition.interimResults = false;
-        recognition.onstart = () => { button.textContent = "Listening…"; button.disabled = true; };
+        recognition.onstart = () => { button.textContent = "Stop recording"; };
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
             textarea.value = `${textarea.value}${textarea.value ? " " : ""}${transcript}`;
             textarea.focus();
         };
         recognition.onerror = () => alert("We could not transcribe that audio. Please try again.");
-        recognition.onend = () => { button.textContent = "🎙️ Record Audio"; button.disabled = false; };
+        recognition.onend = () => { recognition = null; button.textContent = "🎙️ Record Audio"; };
         recognition.start();
     };
-});
+}
+document.querySelectorAll(".audio-btn").forEach((button) => attachVoiceButton(button, button.closest(".card")?.querySelector("textarea")));
 
 const prepVideo = document.getElementById("prepVideo");
 
@@ -88,6 +90,7 @@ const prepPreview = document.getElementById("prepPreview");
 const prepUploadStatus = document.getElementById("prepUploadStatus");
 
 let preparationVideoUrl = "";
+const sectionVideos = {};
 
 let isUploading = false;
 
@@ -131,7 +134,6 @@ function uploadVideo(file, statusElement, previewElement, onComplete) {
 
     }
 
-    preparationVideoUrl = "";
     previewElement.style.display = "none";
 
     isUploading = true;
@@ -158,21 +160,18 @@ function uploadVideo(file, statusElement, previewElement, onComplete) {
             const data = await cloudinaryResponse.json();
             if (!cloudinaryResponse.ok || !data.secure_url) throw new Error(data.error?.message || "Upload failed.");
 
-            preparationVideoUrl = data.secure_url;
-
-            previewElement.src = data.video_url;
+            previewElement.src = data.secure_url;
             previewElement.style.display = "block";
 
             setUploadStatus(statusElement, "Upload complete ✓", null, "success");
 
-            if (onComplete) onComplete(data.video_url);
+            if (onComplete) onComplete(data.secure_url);
 
         })
         .catch((err) => {
 
             console.error(err);
 
-            preparationVideoUrl = "";
             previewElement.style.display = "none";
 
             setUploadStatus(statusElement, `Upload failed — Try Again (${err.message})`, null, "error");
@@ -199,11 +198,23 @@ if (prepVideoBtn && prepVideo) {
 
         const file = prepVideo.files[0];
 
-        uploadVideo(file, prepUploadStatus, prepPreview);
+        uploadVideo(file, prepUploadStatus, prepPreview, (url) => { preparationVideoUrl = url; });
 
     });
 
 }
+
+document.querySelectorAll(".video-btn").forEach((button, index) => {
+    if (button.id === "prepVideoBtn") return;
+    const card = button.closest(".card");
+    const input = card.querySelector('input[type="file"]');
+    const preview = card.querySelector(".video-preview");
+    const status = document.createElement("div");
+    status.className = "upload-status";
+    button.onclick = () => input.click();
+    input.onchange = () => uploadVideo(input.files[0], status, preview, (url) => { sectionVideos[`section_${index}`] = url; });
+    button.parentElement.appendChild(status);
+});
 
 const yearButtons = document.querySelectorAll(".year-btn");
 
@@ -246,8 +257,15 @@ function renderAllGuidanceYears() {
                 textarea.dataset.question = question;
                 textarea.id = `guidance-${year}-${sectionIndex}-${qIndex}`;
 
+                const audioButton = document.createElement("button");
+                audioButton.type = "button";
+                audioButton.className = "audio-btn";
+                audioButton.textContent = "🎙️ Record Audio";
+                attachVoiceButton(audioButton, textarea);
+
                 wrapper.appendChild(label);
                 wrapper.appendChild(textarea);
+                wrapper.appendChild(audioButton);
                 sectionEl.appendChild(wrapper);
 
             });
@@ -282,6 +300,23 @@ yearButtons.forEach((button) => {
 });
 
 renderAllGuidanceYears();
+
+async function loadExistingGuidance() {
+    const user = await getCurrentUser();
+    if (!user?.mentor_id) return;
+    const response = await fetch(`${BASE_URL}/api/guidance/${user.mentor_id}`);
+    if (!response.ok) return;
+    const answers = await response.json();
+    answers.forEach((item) => {
+        const textarea = [...document.querySelectorAll("#guidanceContent textarea")].find((el) =>
+            Number(el.dataset.year) === Number(item.year) &&
+            el.dataset.category === item.category && el.dataset.question === item.question
+        );
+        if (textarea) textarea.value = item.answer;
+    });
+}
+
+loadExistingGuidance();
 
 function collectGuidanceAnswers() {
 
@@ -351,7 +386,8 @@ submitBtn.addEventListener("click", async () => {
         interview_timeline: document.getElementById("timeline").value.trim(),
         mistakes: document.getElementById("mistakes").value.trim(),
         interview_rounds: document.getElementById("interviewRounds").value.trim(),
-        preparation_video_url: preparationVideoUrl
+        preparation_video_url: preparationVideoUrl,
+        section_videos: sectionVideos
 
     };
 

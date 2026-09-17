@@ -76,19 +76,25 @@ async function fetchMentor() {
 
         mentorName.textContent = mentor.full_name;
 
-        const latest = insights[0];
+        // Prefer the highest-paying placement. If there is no placement,
+        // show the internship with the highest monthly stipend instead.
+        const placements = insights.filter(item => item.experience_type === "Placement");
+        const internships = insights.filter(item => item.experience_type === "Internship");
+        const bestOffer = placements.length
+            ? placements.reduce((best, item) => Number(item.package_lpa || 0) > Number(best.package_lpa || 0) ? item : best)
+            : internships.reduce((best, item) => Number(item.stipend_monthly || 0) > Number(best.stipend_monthly || 0) ? item : best, internships[0]);
 
-        mentorRole.textContent = latest?.role || "No journey shared yet";
-        mentorCompany.textContent = latest?.company || "";
-        mentorPackage.textContent = latest?.experience_type === "Internship"
-            ? `💵 ₹${latest.stipend_monthly || "—"}/month`
-            : latest?.package_lpa != null ? `💰 ${latest.package_lpa} LPA` : "💰 —";
-        mentorCgpa.textContent = latest?.offer_cgpa != null ? `⭐ ${latest.offer_cgpa} CGPA` : "⭐ —";
-        mentorType.textContent = latest?.experience_type ? `🎓 ${latest.experience_type}` : "🎓 —";
+        mentorRole.textContent = bestOffer?.role || "No journey shared yet";
+        mentorCompany.textContent = bestOffer?.company || "";
+        mentorPackage.textContent = bestOffer?.experience_type === "Internship"
+            ? `💵 ₹${bestOffer.stipend_monthly || "—"}/month`
+            : bestOffer?.package_lpa != null ? `💰 ${bestOffer.package_lpa} LPA` : "💰 —";
+        mentorCgpa.textContent = bestOffer?.offer_cgpa != null ? `⭐ ${bestOffer.offer_cgpa} CGPA` : "⭐ —";
+        mentorType.textContent = bestOffer?.experience_type ? `🎓 ${bestOffer.experience_type}` : "🎓 —";
         mentorExperienceCount.textContent = `🧳 ${insights.length} Experience(s) Shared`;
 
-        placementinsights = insights.filter(item => item.experience_type === "Placement");
-        internshipinsights = insights.filter(item => item.experience_type === "Internship");
+        placementinsights = placements;
+        internshipinsights = internships;
 
         renderExperienceChips();
 
@@ -190,6 +196,10 @@ function renderExperienceDetails(index) {
         <video controls src="${experience.preparation_video_url}" style="width:100%;border-radius:8px;"></video>
     </div>
     ` : ""}
+
+    ${Object.entries(experience.section_videos || {}).map(([key, url]) => `
+    <div class="card"><h2>Supporting Video</h2><video controls src="${url}" style="width:100%;border-radius:8px;"></video></div>
+    `).join("")}
 
     `;
 
