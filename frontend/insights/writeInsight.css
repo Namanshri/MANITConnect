@@ -212,6 +212,10 @@ button:hover{
     font-weight:bold;
 
 }
+
+.docx-upload{ color:#6c4df6; cursor:pointer; margin-bottom:8px; }
+#docxFile{ padding:10px; background:#fff; }
+.docx-status{ color:#666; font-size:13px; margin:6px 0; }
  .navbar { display:flex; align-items:center; gap:28px; padding:16px 40px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.05); width:100%; }
  .navbar h1 { margin:0; color:#8a00ff; font-size:24px; }
  .navbar nav { display:flex; gap:24px; flex:1; }

@@ -1,5 +1,14 @@
 const sendResetButton = document.getElementById("sendOtpBtn");
 
+// Firebase completes the password change on its secure reset page; this
+// screen therefore has a single action, not the old OTP's three steps.
+document.querySelectorAll(".step").forEach((step, index) => {
+    if (index > 0) step.style.display = "none";
+});
+document.querySelector(".form-container > p")?.replaceChildren(
+    "Enter your email and we'll send a secure password-reset link."
+);
+
 // Firebase sends a time-limited reset link only to the mailbox owner.
 sendResetButton.addEventListener("click", async () => {
     const email = document.getElementById("email").value.trim();

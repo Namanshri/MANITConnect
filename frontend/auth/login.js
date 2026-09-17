@@ -5,6 +5,15 @@ const BASE_URL =
         : "https://manitconnnect-2.onrender.com";
 
 const loginForm = document.getElementById("loginForm");
+const passwordInput = document.getElementById("password");
+const togglePassword = document.getElementById("togglePassword");
+
+togglePassword?.addEventListener("click", () => {
+    const visible = passwordInput.type === "text";
+    passwordInput.type = visible ? "password" : "text";
+    togglePassword.querySelector("i")?.classList.toggle("fa-eye-slash", !visible);
+    togglePassword.querySelector("i")?.classList.toggle("fa-eye", visible);
+});
 
 loginForm.addEventListener("submit", async (e) => {
 

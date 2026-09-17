@@ -139,6 +139,12 @@
 
             </label>
 
+            <label class="docx-upload" for="docxFile">
+                Upload a Word document (.docx) instead
+            </label>
+            <input id="docxFile" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+            <p id="docxStatus" class="docx-status"></p>
+
             <textarea
 
                 id="content"
@@ -175,6 +181,7 @@ Example:
     <script src="../shared/comingSoon.js"></script>
     <script src="../shared/profileMenu.js"></script>
     <script>renderProfileMenu("profileMenuContainer");</script>
+    <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
     <script src="writeInsight.js"></script>
 
 </body>

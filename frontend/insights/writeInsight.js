@@ -17,6 +17,23 @@ const selectedTags = document.getElementById("selectedTags");
 
 let tags = [];
 
+const docxFile = document.getElementById("docxFile");
+const docxStatus = document.getElementById("docxStatus");
+docxFile?.addEventListener("change", async () => {
+    const file = docxFile.files[0];
+    if (!file) return;
+    if (!window.mammoth) return alert("Document reader failed to load. Please try again.");
+    docxStatus.textContent = "Reading document…";
+    try {
+        const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+        document.getElementById("content").value = result.value.trim();
+        docxStatus.textContent = "Document text added. You can edit it before publishing.";
+    } catch (error) {
+        console.error(error);
+        docxStatus.textContent = "Could not read this .docx file.";
+    }
+});
+
 insightForm.addEventListener("submit", publishInsight);
 
 /* TAGS */
