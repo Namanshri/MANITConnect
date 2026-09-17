@@ -35,7 +35,11 @@ loginForm.addEventListener("submit", async (e) => {
             // Accounts created before this Firebase migration do not have a
             // Firebase user. The API only accepts this legacy path for rows
             // without a Firebase UID, so it cannot bypass email verification.
-            if (error.code !== "auth/user-not-found") throw error;
+            // Firebase deliberately returns auth/invalid-credential for both
+            // a missing user and an incorrect password, to prevent account
+            // enumeration. Try the legacy API in either case; it only permits
+            // pre-migration rows with no firebase_uid.
+            if (!["auth/user-not-found", "auth/invalid-credential"].includes(error.code)) throw error;
             loginPayload = { email, password };
         }
 
