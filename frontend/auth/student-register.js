@@ -80,6 +80,11 @@ studentForm.addEventListener("submit", async (e) => {
 
     const password = passwordInput.value;
 
+    if (password.length < 6) {
+        alert("Password must be at least 6 characters long.");
+        return;
+    }
+
     if (!window.firebase || !firebase.apps.length) {
         alert("Email verification is not configured yet. Please contact the administrator.");
         return;
