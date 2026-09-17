@@ -17,6 +17,10 @@ const createExperience = async (req, res) => {
 
     package_lpa,
 
+    stipend_monthly,
+
+    offer_cgpa,
+
     experience_type,
 
     placement_mode,
@@ -65,6 +69,8 @@ const mentor_id = mentor.rows[0].mentor_id;
     company,
     role,
     package_lpa,
+    stipend_monthly,
+    offer_cgpa,
     experience_type,
     placement_mode,
     preparation_strategy,
@@ -78,7 +84,7 @@ const mentor_id = mentor.rows[0].mentor_id;
 
            VALUES
 (
-    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13
+    $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15
 )
 
             RETURNING *`,
@@ -92,6 +98,10 @@ const mentor_id = mentor.rows[0].mentor_id;
     role,
 
     package_lpa || null,
+
+    stipend_monthly || null,
+
+    offer_cgpa || null,
 
     experience_type,
 

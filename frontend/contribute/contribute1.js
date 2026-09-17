@@ -13,6 +13,16 @@ const mentorForm = document.getElementById("mentorForm");
 */
 requireAuth(["mentor"]);
 
+const experienceTypeInput = document.getElementById("experienceType");
+const compensationLabel = document.getElementById("compensationLabel");
+const packageInput = document.getElementById("package");
+
+experienceTypeInput.addEventListener("change", () => {
+    const internship = experienceTypeInput.value === "Internship";
+    compensationLabel.textContent = internship ? "Monthly Stipend (₹)" : "Annual Package (LPA)";
+    packageInput.placeholder = internship ? "e.g. 50000" : "e.g. 12";
+});
+
 mentorForm.addEventListener("submit", async (e) => {
 
     e.preventDefault();
@@ -71,7 +81,11 @@ mentorForm.addEventListener("submit", async (e) => {
 
         role,
 
-        package_lpa: Number(packageLPA),
+        package_lpa: experienceType === "Placement" ? Number(packageLPA) : null,
+
+        stipend_monthly: experienceType === "Internship" ? Number(packageLPA) : null,
+
+        offer_cgpa: Number(cgpa),
 
         experience_type: experienceType,
 

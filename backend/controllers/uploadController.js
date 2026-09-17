@@ -1,6 +1,23 @@
 const cloudinary = require("../config/cloudinary");
 const fs = require("fs");
 
+const createUploadSignature = (req, res) => {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const folder = "manitconnect/videos";
+    const signature = cloudinary.utils.api_sign_request(
+        { timestamp, folder },
+        process.env.CLOUDINARY_API_SECRET
+    );
+
+    res.json({
+        timestamp,
+        folder,
+        signature,
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY
+    });
+};
+
 const uploadMedia = async (req, res) => {
 
     try {
@@ -89,4 +106,4 @@ console.dir(error, { depth: null });
 
 };
 
-module.exports = { uploadMedia };
+module.exports = { uploadMedia, createUploadSignature };

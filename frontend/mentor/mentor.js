@@ -80,8 +80,10 @@ async function fetchMentor() {
 
         mentorRole.textContent = latest?.role || "No journey shared yet";
         mentorCompany.textContent = latest?.company || "";
-        mentorPackage.textContent = latest?.package_lpa != null ? `💰 ${latest.package_lpa} LPA` : "💰 —";
-        mentorCgpa.textContent = mentor.cgpa != null ? `⭐ ${mentor.cgpa} CGPA` : "⭐ —";
+        mentorPackage.textContent = latest?.experience_type === "Internship"
+            ? `💵 ₹${latest.stipend_monthly || "—"}/month`
+            : latest?.package_lpa != null ? `💰 ${latest.package_lpa} LPA` : "💰 —";
+        mentorCgpa.textContent = latest?.offer_cgpa != null ? `⭐ ${latest.offer_cgpa} CGPA` : "⭐ —";
         mentorType.textContent = latest?.experience_type ? `🎓 ${latest.experience_type}` : "🎓 —";
         mentorExperienceCount.textContent = `🧳 ${insights.length} Experience(s) Shared`;
 
@@ -166,7 +168,10 @@ function renderExperienceDetails(index) {
     <div class="card">
         <h2>${experience.company || "Company"} — ${experience.role || "Role"}</h2>
         <p>
-            ${experience.package_lpa != null ? experience.package_lpa + " LPA" : ""}
+            ${experience.experience_type === "Internship"
+                ? (experience.stipend_monthly != null ? "₹" + experience.stipend_monthly + "/month" : "")
+                : (experience.package_lpa != null ? experience.package_lpa + " LPA" : "")}
+            ${experience.offer_cgpa != null ? " · " + experience.offer_cgpa + " CGPA" : ""}
             ${experience.placement_mode ? " · " + experience.placement_mode : ""}
         </p>
         <div class="card-actions" id="expBookmark-${experience.experience_id}"></div>

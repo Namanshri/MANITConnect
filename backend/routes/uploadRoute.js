@@ -1,8 +1,12 @@
 const express = require("express");
 const upload = require("../middleware/upload");
-const { uploadMedia } = require("../controllers/uploadController");
+const { uploadMedia, createUploadSignature } = require("../controllers/uploadController");
+const authenticateUser = require("../middleware/authMiddleware");
+const authorizeRoles = require("../middleware/authorizeRoles");
 
 const router = express.Router();
+
+router.get("/signature", authenticateUser, authorizeRoles("mentor"), createUploadSignature);
 
 router.post(
     "/",

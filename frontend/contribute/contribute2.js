@@ -56,6 +56,31 @@ guidanceBtn.onclick = () => {
 
 const prepVideoBtn = document.getElementById("prepVideoBtn");
 
+// Browser speech recognition writes the transcript into the textarea beside
+// the button; the mentor can edit it before submitting.
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+document.querySelectorAll(".audio-btn").forEach((button) => {
+    button.onclick = () => {
+        const textarea = button.closest(".card")?.querySelector("textarea");
+        if (!SpeechRecognition) {
+            alert("Speech-to-text is not supported by this browser. Please use Chrome or type your answer.");
+            return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-IN";
+        recognition.interimResults = false;
+        recognition.onstart = () => { button.textContent = "Listening…"; button.disabled = true; };
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            textarea.value = `${textarea.value}${textarea.value ? " " : ""}${transcript}`;
+            textarea.focus();
+        };
+        recognition.onerror = () => alert("We could not transcribe that audio. Please try again.");
+        recognition.onend = () => { button.textContent = "🎙️ Record Audio"; button.disabled = false; };
+        recognition.start();
+    };
+});
+
 const prepVideo = document.getElementById("prepVideo");
 
 const prepPreview = document.getElementById("prepPreview");
@@ -114,25 +139,26 @@ function uploadVideo(file, statusElement, previewElement, onComplete) {
 
     setUploadStatus(statusElement, "Uploading...", null, "uploading");
 
-    const formData = new FormData();
-    formData.append("video", file);
-
-    fetch(`${BASE_URL}/api/upload`, {
-        method: "POST",
-        credentials: "include",
-        body: formData
-    })
+    fetch(`${BASE_URL}/api/upload/signature`, { credentials: "include" })
         .then(async (response) => {
+            const signatureData = await response.json();
+            if (!response.ok) throw new Error(signatureData.message || "Could not prepare upload.");
 
-            const data = await response.json();
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("api_key", signatureData.api_key);
+            formData.append("timestamp", signatureData.timestamp);
+            formData.append("folder", signatureData.folder);
+            formData.append("signature", signatureData.signature);
 
-            if (!response.ok || !data.video_url) {
+            const cloudinaryResponse = await fetch(
+                `https://api.cloudinary.com/v1_1/${signatureData.cloud_name}/video/upload`,
+                { method: "POST", body: formData }
+            );
+            const data = await cloudinaryResponse.json();
+            if (!cloudinaryResponse.ok || !data.secure_url) throw new Error(data.error?.message || "Upload failed.");
 
-                throw new Error(data.message || "Upload failed.");
-
-            }
-
-            preparationVideoUrl = data.video_url;
+            preparationVideoUrl = data.secure_url;
 
             previewElement.src = data.video_url;
             previewElement.style.display = "block";
