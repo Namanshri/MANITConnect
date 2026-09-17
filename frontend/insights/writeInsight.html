@@ -18,6 +18,18 @@
 
 <body>
 
+    <header class="navbar">
+        <h1>MANITConnect</h1>
+        <nav>
+            <a href="../Dashboard/dashboard.html">Dashboard</a>
+            <a href="insights.html" class="active">Insights</a>
+            <a href="../mentor/mentors.html">Mentors</a>
+            <a href="#" onclick="showComingSoon(); return false;">AI Advisor</a>
+            <a href="../community/community.html">Community</a>
+        </nav>
+        <div id="profileMenuContainer"></div>
+    </header>
+
     <div class="container">
 
         <h1>
@@ -159,6 +171,10 @@ Example:
 
     </div>
 
+    <script src="../shared/session.js"></script>
+    <script src="../shared/comingSoon.js"></script>
+    <script src="../shared/profileMenu.js"></script>
+    <script>renderProfileMenu("profileMenuContainer");</script>
     <script src="writeInsight.js"></script>
 
 </body>

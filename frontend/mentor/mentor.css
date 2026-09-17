@@ -291,11 +291,11 @@ box-shadow:
 }
 
 
-.active-exp{
+.experience-toggle button.active-exp{
 
-background:#8a00ff;
+background:#8a00ff !important;
 
-color:white;
+color:white !important;
 
 }
 

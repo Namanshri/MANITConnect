@@ -8,9 +8,10 @@ const BASE_URL =
 
 requireAuth(["mentor"]);
 
+const guidanceOnly = new URLSearchParams(window.location.search).get("mode") === "guidance";
 const pendingJourney = JSON.parse(sessionStorage.getItem("pendingJourney") || "null");
 
-if (!pendingJourney) {
+if (!pendingJourney && !guidanceOnly) {
 
     alert("Please start from Step 1 first.");
     window.location.href = "contribute1.html";
@@ -24,6 +25,16 @@ const guidanceBtn = document.getElementById("guidanceBtn");
 const journeySection = document.getElementById("journeySection");
 
 const guidanceSection = document.getElementById("guidanceSection");
+
+if (guidanceOnly) {
+    journeyBtn.parentElement.style.display = "none";
+    journeySection.style.display = "none";
+    guidanceSection.style.display = "block";
+    document.getElementById("backBtn").style.display = "none";
+    document.getElementById("submitExperience").textContent = "Submit Guidance";
+    document.querySelector("#successOverlay h2").textContent = "Guidance Submitted!";
+    document.querySelector("#successOverlay .success-subtitle").textContent = "Your guidance will help MANIT juniors prepare with confidence.";
+}
 
 journeyBtn.onclick = () => {
 
@@ -296,7 +307,7 @@ submitBtn.addEventListener("click", async () => {
 
     }
 
-    if (!pendingJourney) {
+    if (!pendingJourney && !guidanceOnly) {
 
         alert("Please start from Step 1 first.");
         window.location.href = "contribute1.html";
@@ -304,7 +315,7 @@ submitBtn.addEventListener("click", async () => {
 
     }
 
-    const experienceData = {
+    const experienceData = pendingJourney && {
 
         ...pendingJourney,
 
@@ -325,6 +336,7 @@ submitBtn.addEventListener("click", async () => {
 
     try {
 
+        if (experienceData) {
         const experienceResponse = await fetch(`${BASE_URL}/api/experience`, {
 
             method: "POST",
@@ -340,6 +352,7 @@ submitBtn.addEventListener("click", async () => {
 
             throw new Error(experienceResult.message || "Failed to save your journey.");
 
+        }
         }
 
         for (const item of guidanceAnswers) {

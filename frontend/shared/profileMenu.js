@@ -43,9 +43,12 @@ async function renderProfileMenu(containerId) {
             z-index: 1000; font-family: 'Inter', Arial, sans-serif;
         ">
             <div style="padding: 12px 16px; border-bottom: 1px solid #eee;">
-                <div style="font-weight:600; font-size:14px; color:#222;">${user.full_name}</div>
+                <a href="${user.mentor_id ? `../mentor/mentor.html?id=${user.mentor_id}` : '#'}" style="font-weight:600; font-size:14px; color:#222; text-decoration:none;">${user.full_name}</a>
                 <div style="font-size:12px; color:#999; text-transform:capitalize;">${user.role}</div>
             </div>
+            ${user.role === "mentor" ? `
+            <a href="../contribute/contribute1.html" style="display:block; padding:12px 16px; color:#333; text-decoration:none; font-size:14px;">Share an Experience</a>
+            <a href="../contribute/contribute2.html?mode=guidance" style="display:block; padding:12px 16px; color:#333; text-decoration:none; font-size:14px;">Share Guidance</a>` : ""}
             <a id="profileMenuLibrary" href="../library/library.html" style="
                 display:block; padding:12px 16px; color:#333; text-decoration:none; font-size:14px;
             ">📚 Your Library</a>
