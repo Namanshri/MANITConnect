@@ -22,6 +22,23 @@ loginForm.addEventListener("submit", async (e) => {
 
     try {
 
+        if (!window.firebase || !firebase.apps.length) {
+            throw new Error("Email authentication is not configured yet.");
+        }
+
+        let loginPayload;
+        try {
+            const credential = await firebase.auth().signInWithEmailAndPassword(email, password);
+            const firebase_id_token = await credential.user.getIdToken(true);
+            loginPayload = { firebase_id_token };
+        } catch (error) {
+            // Accounts created before this Firebase migration do not have a
+            // Firebase user. The API only accepts this legacy path for rows
+            // without a Firebase UID, so it cannot bypass email verification.
+            if (error.code !== "auth/user-not-found") throw error;
+            loginPayload = { email, password };
+        }
+
         const response = await fetch(
 
             `${BASE_URL}/api/auth/login`,
@@ -38,7 +55,7 @@ loginForm.addEventListener("submit", async (e) => {
 
                 credentials: "include",
 
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify(loginPayload)
 
             }
 

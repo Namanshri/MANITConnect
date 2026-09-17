@@ -84,7 +84,29 @@ studentForm.addEventListener("submit", async (e) => {
 
     const password = passwordInput.value;
 
+    if (!window.firebase || !firebase.apps.length) {
+        alert("Email verification is not configured yet. Please contact the administrator.");
+        return;
+    }
+
     try {
+
+        let firebaseUser;
+        try {
+            const credential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+            firebaseUser = credential.user;
+        } catch (error) {
+            if (error.code !== "auth/email-already-in-use") throw error;
+            const credential = await firebase.auth().signInWithEmailAndPassword(email, password);
+            firebaseUser = credential.user;
+        }
+
+        await firebaseUser.sendEmailVerification({
+            url: `${window.location.origin}/frontend/auth/verify-email.html`,
+            handleCodeInApp: true
+        });
+
+        const firebase_id_token = await firebaseUser.getIdToken();
 
         const response = await fetch(
 
@@ -108,7 +130,9 @@ studentForm.addEventListener("submit", async (e) => {
 
                     branch,
 
-                    password
+                    password,
+
+                    firebase_id_token
 
                 })
 

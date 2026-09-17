@@ -8,6 +8,23 @@ const bcrypt = require("bcrypt");
 
 const jwt = require("jsonwebtoken");
 
+const { verifyFirebaseIdToken } = require("../utils/firebaseAdmin");
+
+const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
+
+const getFirebaseEmail = async (firebaseIdToken, requestedEmail) => {
+    const decoded = await verifyFirebaseIdToken(firebaseIdToken);
+    const firebaseEmail = normalizeEmail(decoded.email);
+
+    if (!firebaseEmail || firebaseEmail !== normalizeEmail(requestedEmail)) {
+        const error = new Error("The Firebase account does not match the email address provided.");
+        error.statusCode = 400;
+        throw error;
+    }
+
+    return decoded;
+};
+
 const getCookieOptions = () => {
 
     const isProduction = process.env.NODE_ENV === "production";
@@ -47,15 +64,21 @@ const registerStudent = async (req, res) => {
 
             email,
 
-            password
+            password,
+
+            firebase_id_token: firebaseIdToken
 
         } = req.body;
+
+        const firebaseUser = await getFirebaseEmail(firebaseIdToken, email);
+
+        const normalizedEmail = normalizeEmail(email);
 
         const existingUser = await client.query(
 
             "SELECT * FROM users WHERE email=$1",
 
-            [email]
+            [normalizedEmail]
 
         );
 
@@ -77,6 +100,8 @@ const registerStudent = async (req, res) => {
 
         );
 
+        // Retain a non-null token for compatibility with the current schema;
+        // Firebase is the authority for verification, so this value is unused.
         const verificationToken = crypto.randomBytes(32).toString("hex");
 
         await client.query("BEGIN");
@@ -89,6 +114,7 @@ const registerStudent = async (req, res) => {
     (
         full_name,
         email,
+        firebase_uid,
         password,
         role,
         is_verified,
@@ -100,58 +126,29 @@ const registerStudent = async (req, res) => {
         $1,
         $2,
         $3,
+        $4,
         'student',
         false,
-        $4
+        $5
     )
 
     `,
 
     [
         full_name,
-        email,
+        normalizedEmail,
+        firebaseUser.uid,
         hashedPassword,
         verificationToken
     ]
 
 );
 
-const verificationLink =
-`${process.env.BACKEND_URL}/api/auth/verify-email/${verificationToken}`;
-
-await sendEmail(
-
-    email,
-
-    "Verify your MANITConnect account",
-
-    `
-        <h2>Welcome to MANITConnect!</h2>
-
-        <p>Please verify your email by clicking the button below.</p>
-
-        <a href="${verificationLink}"
-           style="
-                background:#6C63FF;
-                color:white;
-                padding:12px 20px;
-                text-decoration:none;
-                border-radius:6px;
-           ">
-            Verify Email
-        </a>
-
-        <p>If the button doesn't work, copy this link:</p>
-
-        <p>${verificationLink}</p>
-    `
-);
-
         await client.query("COMMIT");
 
         res.status(201).json({
 
-    message: "Registration successful. Please check your email to verify your account."
+    message: "Registration successful. Check your inbox and verify your email before logging in."
 
 });
 
@@ -163,7 +160,7 @@ await sendEmail(
 
         console.log(err);
 
-        res.status(500).json({
+        res.status(err.statusCode || 500).json({
 
             message: "We couldn't complete registration — the verification email failed to send. Please try again in a moment."
 
@@ -195,15 +192,21 @@ const registerMentor = async (req,res)=>{
 
     branch,
 
-    password
+    password,
+
+    firebase_id_token: firebaseIdToken
 
 } = req.body;
+
+        const firebaseUser = await getFirebaseEmail(firebaseIdToken, email);
+
+        const normalizedEmail = normalizeEmail(email);
 
         const existingUser=await client.query(
 
             "SELECT * FROM users WHERE email=$1",
 
-            [email]
+            [normalizedEmail]
 
         );
 
@@ -225,6 +228,8 @@ const registerMentor = async (req,res)=>{
 
         );
 
+        // Retain a non-null token for compatibility with the current schema;
+        // Firebase is the authority for verification, so this value is unused.
         const verificationToken = crypto.randomBytes(32).toString("hex");
 
         await client.query("BEGIN");
@@ -237,6 +242,7 @@ const registerMentor = async (req,res)=>{
 (
     full_name,
     email,
+    firebase_uid,
     password,
     role,
     is_verified,
@@ -248,9 +254,10 @@ VALUES
     $1,
     $2,
     $3,
+    $4,
     'mentor',
     false,
-    $4
+    $5
 )
 
 RETURNING user_id
@@ -261,7 +268,9 @@ RETURNING user_id
 
         full_name,
 
-        email,
+        normalizedEmail,
+
+        firebaseUser.uid,
 
         hashedPassword,
 
@@ -299,44 +308,12 @@ VALUES
 
 );
 
-const verificationLink =
-`${process.env.BACKEND_URL}/api/auth/verify-email/${verificationToken}`;
-
-await sendEmail(
-
-    email,
-
-    "Verify your MANITConnect account",
-
-    `
-    <h2>Welcome to MANITConnect!</h2>
-
-    <p>Please verify your email by clicking below.</p>
-
-    <a href="${verificationLink}"
-       style="
-            background:#6C63FF;
-            color:white;
-            padding:12px 20px;
-            text-decoration:none;
-            border-radius:6px;
-       ">
-        Verify Email
-    </a>
-
-    <br><br>
-
-    <p>${verificationLink}</p>
-
-    `
-);
-
         await client.query("COMMIT");
 
        res.status(201).json({
 
     message:
-    "Registration successful. Please check your email to verify your account."
+    "Registration successful. Check your inbox and verify your email before logging in."
 
 });
 
@@ -348,7 +325,7 @@ await sendEmail(
 
         console.log(err);
 
-        res.status(500).json({
+        res.status(err.statusCode || 500).json({
 
             message:"We couldn't complete registration — the verification email failed to send. Please try again in a moment."
 
@@ -367,13 +344,23 @@ const login = async (req, res) => {
 
     try {
 
-        const {
+        const { firebase_id_token: firebaseIdToken, email: legacyEmail, password: legacyPassword } = req.body;
+        let firebaseUser = null;
+        let email;
 
-            email,
+        if (firebaseIdToken) {
+            firebaseUser = await verifyFirebaseIdToken(firebaseIdToken);
+            email = normalizeEmail(firebaseUser.email);
 
-            password
-
-        } = req.body;
+            if (!firebaseUser.email_verified) {
+                return res.status(403).json({ message: "Please verify your email before logging in." });
+            }
+        } else {
+            email = normalizeEmail(legacyEmail);
+            if (!email || !legacyPassword) {
+                return res.status(401).json({ message: "Invalid email or password." });
+            }
+        }
 
         const result = await pool.query(
 
@@ -403,32 +390,20 @@ const login = async (req, res) => {
 
         const user = result.rows[0];
 
-        if (!user.is_verified) {
-
-    return res.status(403).json({
-
-        message: "Please verify your email before logging in."
-
-    });
-
-}
-
-        const isMatch = await bcrypt.compare(
-
-            password,
-
-            user.password
-
-        );
-
-        if (!isMatch) {
-
-            return res.status(401).json({
-
-                message: "Invalid email or password."
-
-            });
-
+        if (firebaseUser) {
+            if (user.firebase_uid !== firebaseUser.uid) {
+                return res.status(401).json({ message: "Invalid email or password." });
+            }
+            await pool.query(
+                "UPDATE users SET is_verified = true, verification_token = NULL WHERE user_id = $1",
+                [user.user_id]
+            );
+        } else {
+            // Legacy accounts created before Firebase have no UID. Do not allow
+            // this path for any new Firebase-bound account.
+            if (user.firebase_uid || !user.is_verified || !(await bcrypt.compare(legacyPassword, user.password))) {
+                return res.status(401).json({ message: "Invalid email or password." });
+            }
         }
 
         const token = jwt.sign(
@@ -471,7 +446,7 @@ const login = async (req, res) => {
 
         console.log(err);
 
-        res.status(500).json({
+        res.status(err.statusCode || 500).json({
 
             message: "Database Error"
 
