@@ -58,6 +58,8 @@ const postRoutes = require("./routes/postRoutes");
 
 const bookmarkRoutes = require("./routes/bookmarkRoutes");
 
+const advisorRoutes = require("./routes/advisorRoutes");
+
 app.use("/api/mentor",mentorRoutes);
 
 app.use("/api/experience",experienceRoutes);
@@ -71,6 +73,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 
 app.use("/api/bookmarks", bookmarkRoutes);
+
+app.use("/api/advisor", advisorRoutes);
 
 app.get("/",(req,res)=>{
 

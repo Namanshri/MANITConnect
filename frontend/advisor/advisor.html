@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANITConnect | AI Advisor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="advisor.css">
+</head>
+<body>
+    <header class="navbar">
+        <a class="brand" href="../Dashboard/dashboard.html">MANITConnect</a>
+        <nav>
+            <a href="../Dashboard/dashboard.html">Dashboard</a>
+            <a href="../insights/insights.html">Insights</a>
+            <a href="../mentor/mentors.html">Mentors</a>
+            <a class="active" href="advisor.html">AI Advisor</a>
+            <a href="../community/community.html">Community</a>
+        </nav>
+        <div id="profileMenuContainer"></div>
+    </header>
+
+    <main class="page-shell">
+        <section class="intro">
+            <div class="advisor-mark">✦</div>
+            <div>
+                <p class="eyebrow">MANITCONNECT AI ADVISOR</p>
+                <h1>Ask the people who have been there.</h1>
+                <p>Get answers grounded in journeys, placement experiences, insights, and senior guidance shared on MANITConnect.</p>
+            </div>
+            <span class="status"><i></i> Database-aware</span>
+        </section>
+
+        <section class="chat-card" aria-label="AI Advisor chat">
+            <div id="chatMessages" class="messages" aria-live="polite">
+                <article class="message assistant">
+                    <div class="avatar">✦</div>
+                    <div class="bubble">
+                        <p>Hello! I’m your MANITConnect AI Advisor.</p>
+                        <p>I search the journeys and advice shared by MANIT seniors to help with placements, internships, skills, companies, and preparation.</p>
+                        <p>What would you like to know?</p>
+                    </div>
+                </article>
+            </div>
+            <div class="suggestions" aria-label="Suggested questions">
+                <button type="button">Which seniors shared advice for software roles?</button>
+                <button type="button">What skills helped with data roles?</button>
+                <button type="button">Show placement preparation strategies.</button>
+            </div>
+            <form id="advisorForm" class="composer">
+                <label class="sr-only" for="questionInput">Ask a question</label>
+                <textarea id="questionInput" rows="1" maxlength="1200" placeholder="Ask about placements, internships, companies, or preparation…"></textarea>
+                <button id="sendButton" type="submit" aria-label="Send question">➜</button>
+            </form>
+            <p class="disclaimer">Answers are based on records contributed to MANITConnect. Check linked sources for complete details.</p>
+        </section>
+    </main>
+    <script src="../shared/session.js"></script>
+    <script src="../shared/profileMenu.js"></script>
+    <script>renderProfileMenu("profileMenuContainer");</script>
+    <script src="advisor.js"></script>
+</body>
+</html>
