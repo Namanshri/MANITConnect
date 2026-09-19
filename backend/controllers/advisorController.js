@@ -1,10 +1,18 @@
 const pool = require("../config/db");
 
-const MAX_CONTEXT_ITEMS = 18;
+const MAX_CONTEXT_ITEMS = 8;
+const STOP_WORDS = new Set([
+    "a", "an", "and", "are", "about", "at", "be", "can", "do", "for", "from", "get", "give",
+    "help", "how", "i", "in", "is", "it", "me", "of", "on", "or", "please", "tell", "that",
+    "the", "to", "want", "what", "which", "with", "would", "you", "your"
+]);
 
 function scoreRecord(record, terms) {
     const text = Object.values(record).filter(Boolean).join(" ").toLowerCase();
-    return terms.reduce((score, term) => score + (text.includes(term) ? 1 : 0), 0);
+    return terms.reduce((score, term) => {
+        const matches = text.match(new RegExp(`\\b${term.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\b`, "g"));
+        return score + (matches ? Math.min(matches.length, 3) : 0);
+    }, 0);
 }
 
 function formatRecord(record, index) {
@@ -48,26 +56,35 @@ async function getAdvisorContext(question) {
         WHERE g.answer IS NOT NULL AND TRIM(g.answer) <> ''
     `);
 
-    const terms = question.toLowerCase().match(/[a-z0-9+#.]{2,}/g) || [];
+    const terms = (question.toLowerCase().match(/[a-z0-9+#.]{2,}/g) || [])
+        .filter((term) => !STOP_WORDS.has(term));
     return result.rows
         .map((record) => ({ record, score: scoreRecord(record, terms) }))
+        .filter(({ score }) => terms.length === 0 || score > 0)
         .sort((a, b) => b.score - a.score)
         .slice(0, MAX_CONTEXT_ITEMS)
         .map(({ record }, index) => ({ ...record, reference: index + 1 }));
 }
 
-function fallbackAnswer(records) {
+function fallbackAnswer(records, question) {
     if (!records.length) {
         return "I couldn't find relevant mentor journeys, insights, or guidance in MANITConnect yet. Try a broader question, or explore the Mentors page.";
     }
 
-    const highlights = records.slice(0, 4).map((record) => {
-        const who = record.full_name || "A mentor";
+    const lead = records.length === 1
+        ? "I found one relevant record in MANITConnect."
+        : `I found ${records.length} relevant records in MANITConnect.`;
+    const highlights = records.slice(0, 3).map((record) => {
+        const person = record.full_name || "A senior";
         const role = [record.role, record.company].filter(Boolean).join(" at ");
         const detail = (record.details || "").replace(/\s+/g, " ").trim();
-        return `• ${who}${role ? ` — ${role}` : ""}: ${detail.slice(0, 240)} [${record.reference}]`;
+        const identity = `${person}${role ? ` shared a ${record.experience_type || ""} ${role}`.replace(/\s+/g, " ") : " shared an experience"}`;
+        return `${identity}. Their record says: ${detail.slice(0, 300)} [${record.reference}]`;
     });
-    return `Here are the most relevant records from MANITConnect:\n\n${highlights.join("\n\n")}\n\nConfigure OPENAI_API_KEY on the server for a synthesized AI answer grounded in these same records.`;
+    const limitation = /how|process|apply|selection|get into/i.test(question)
+        ? "The available record may not include the full application or selection process; I have not inferred details that were not contributed."
+        : "These are the records that directly match your question.";
+    return `${lead}\n\n${highlights.join("\n\n")}\n\n${limitation}`;
 }
 
 const askAdvisor = async (req, res) => {
@@ -85,7 +102,7 @@ const askAdvisor = async (req, res) => {
         }));
 
         if (!process.env.OPENAI_API_KEY) {
-            return res.json({ answer: fallbackAnswer(records), sources, mode: "database" });
+            return res.json({ answer: fallbackAnswer(records, question), sources, mode: "database" });
         }
 
         const context = records.map(formatRecord).join("\n\n");
