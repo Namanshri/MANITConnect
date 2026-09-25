@@ -150,6 +150,14 @@ const mentor_id = mentor.rows[0].mentor_id;
 
 module.exports={
 
-    createExperience
+    createExperience,
+
+    deleteExperience: async (req, res) => {
+        try {
+            const result = await pool.query(`DELETE FROM experiences WHERE experience_id=$1 AND (mentor_id=(SELECT mentor_id FROM mentors WHERE user_id=$2) OR $3='admin') RETURNING experience_id`, [req.params.id, req.user.user_id, req.user.role]);
+            if (!result.rows.length) return res.status(403).json({ message: "You can only delete your own journey." });
+            res.status(204).end();
+        } catch (_) { res.status(500).json({ message: "Unable to delete journey." }); }
+    }
 
 };

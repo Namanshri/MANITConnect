@@ -13,7 +13,8 @@ const {
     getInsightsByMentor,
 
     increaseHelpfulCount
-    ,recordView
+    ,recordView,
+    deleteInsight
 
 
 } = require("../controllers/insightController");
@@ -39,6 +40,7 @@ router.post(
 
 );
 router.post("/:id/view", recordView);
+router.delete("/:id", authenticateUser, deleteInsight);
 
 /* GET ALL INSIGHTS */
 

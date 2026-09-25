@@ -14,6 +14,10 @@ const repliesHeading = document.getElementById("repliesHeading");
 const repliesList = document.getElementById("repliesList");
 const replyContent = document.getElementById("replyContent");
 const replySubmitBtn = document.getElementById("replySubmitBtn");
+let isAdmin = false;
+let currentUser = null;
+let parentCommentId = null;
+const replyingTo = document.getElementById("replyingTo");
 
 function timeAgo(dateString) {
 
@@ -60,6 +64,7 @@ async function loadPost() {
             </div>
             <h2>${post.title}</h2>
             <div class="post-body">${post.content}</div>
+            ${isAdmin || currentUser?.user_id === post.user_id ? `<button class="admin-delete-post" type="button" data-post-id="${post.post_id}">Delete question</button>` : ""}
         `;
 
         repliesHeading.textContent = `${comments.length} ${comments.length === 1 ? "Reply" : "Replies"}`;
@@ -75,15 +80,18 @@ async function loadPost() {
             comments.forEach((comment) => {
 
                 const isExpert = comment.author_role === "mentor";
+                const canDelete = isAdmin || currentUser?.user_id === comment.user_id;
 
                 repliesList.innerHTML += `
-                    <div class="reply-card ${isExpert ? "expert" : ""}">
+                    <div class="reply-card ${isExpert ? "expert" : ""} ${comment.parent_comment_id ? "threaded" : ""}">
                         <div class="reply-meta">
                             <span>${comment.author_name}</span>
+                            ${comment.author_role === "admin" ? `<span class="admin-badge">Admin</span>` : ""}
                             ${isExpert ? `<span class="expert-badge">✓ Expert Answer</span>` : ""}
                             <span>· ${timeAgo(comment.created_at)}</span>
                         </div>
                         <div class="reply-body">${comment.content}</div>
+                        <div class="reply-actions"><button class="reply-to" data-comment-id="${comment.comment_id}" data-author="${comment.author_name}">Reply</button>${canDelete ? `<button class="admin-delete-comment" type="button" data-comment-id="${comment.comment_id}">Delete</button>` : ""}</div>
                     </div>
                 `;
 
@@ -101,6 +109,24 @@ async function loadPost() {
     }
 
 }
+
+document.addEventListener("click", async (event) => {
+    const replyButton = event.target.closest(".reply-to");
+    if (replyButton) { parentCommentId=Number(replyButton.dataset.commentId); replyingTo.hidden=false; replyingTo.textContent=`Replying to ${replyButton.dataset.author}`; replyContent.focus(); return; }
+    const commentButton = event.target.closest(".admin-delete-comment");
+    const postButton = event.target.closest(".admin-delete-post");
+    if (!commentButton && !postButton) return;
+    if (!confirm(commentButton ? "Delete this reply?" : "Delete this question and all replies?")) return;
+    const button = commentButton || postButton;
+    button.disabled = true;
+    const url = commentButton ? `${BASE_URL}/api/posts/comments/${button.dataset.commentId}` : `${BASE_URL}/api/posts/${button.dataset.postId}`;
+    try {
+        const response = await fetch(url, { method: "DELETE", credentials: "include" });
+        if (!response.ok) throw new Error();
+        if (postButton) window.location.href = "community.html";
+        else loadPost();
+    } catch (_) { button.disabled = false; alert("Unable to delete this content."); }
+});
 
 replySubmitBtn.addEventListener("click", async () => {
 
@@ -133,7 +159,7 @@ replySubmitBtn.addEventListener("click", async () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ content })
+            body: JSON.stringify({ content, parent_comment_id: parentCommentId })
 
         });
 
@@ -146,6 +172,8 @@ replySubmitBtn.addEventListener("click", async () => {
         }
 
         replyContent.value = "";
+        parentCommentId = null;
+        replyingTo.hidden = true;
         loadPost();
 
     }
@@ -166,4 +194,4 @@ replySubmitBtn.addEventListener("click", async () => {
 
 });
 
-loadPost();
+getCurrentUser().then((user) => { currentUser=user; isAdmin = user?.role === "admin"; loadPost(); });

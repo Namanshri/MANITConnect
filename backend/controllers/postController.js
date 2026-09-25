@@ -50,7 +50,7 @@ const getAllPosts = async (req, res) => {
 
         const { search, category } = req.query;
 
-        const conditions = [];
+        const conditions = ["(users.role <> 'mentor' OR users.mentor_status = 'approved')"];
         const values = [];
 
         if (search) {
@@ -81,7 +81,7 @@ const getAllPosts = async (req, res) => {
                 users.full_name AS author_name,
                 users.role AS author_role,
                 COUNT(comments.comment_id) AS reply_count,
-                BOOL_OR(commenter.role = 'mentor') AS has_expert_answer
+                BOOL_OR(commenter.role = 'mentor' AND commenter.mentor_status = 'approved') AS has_expert_answer
              FROM posts
              JOIN users ON posts.user_id = users.user_id
              LEFT JOIN comments ON comments.post_id = posts.post_id
@@ -137,7 +137,7 @@ const getPostById = async (req, res) => {
             `SELECT comments.*, users.full_name AS author_name, users.role AS author_role
              FROM comments
              JOIN users ON comments.user_id = users.user_id
-             WHERE comments.post_id = $1
+             WHERE comments.post_id = $1 AND (users.role <> 'mentor' OR users.mentor_status = 'approved')
              ORDER BY
                 (users.role = 'mentor') DESC,
                 comments.created_at ASC`,
@@ -171,7 +171,7 @@ const createComment = async (req, res) => {
     try {
 
         const { id } = req.params;
-        const { content } = req.body;
+        const { content, parent_comment_id } = req.body;
 
         if (!content || !content.trim()) {
 
@@ -187,13 +187,18 @@ const createComment = async (req, res) => {
 
         }
 
+        if (parent_comment_id) {
+            const parent = await pool.query("SELECT comment_id FROM comments WHERE comment_id=$1 AND post_id=$2", [parent_comment_id, id]);
+            if (!parent.rows.length) return res.status(400).json({ message: "The reply you selected no longer exists." });
+        }
+
         const result = await pool.query(
 
-            `INSERT INTO comments (post_id, user_id, content)
-             VALUES ($1, $2, $3)
+            `INSERT INTO comments (post_id, user_id, content, parent_comment_id)
+             VALUES ($1, $2, $3, $4)
              RETURNING *`,
 
-            [id, req.user.user_id, content]
+            [id, req.user.user_id, content, parent_comment_id || null]
 
         );
 
@@ -211,11 +216,33 @@ const createComment = async (req, res) => {
 
 };
 
+const deletePost = async (req, res) => {
+    try {
+        const result = await pool.query("SELECT user_id FROM posts WHERE post_id=$1", [req.params.id]);
+        if (!result.rows.length) return res.status(404).json({ message: "Post not found." });
+        if (req.user.role !== "admin" && result.rows[0].user_id !== req.user.user_id) return res.status(403).json({ message: "You can only delete your own question." });
+        await pool.query("DELETE FROM posts WHERE post_id=$1", [req.params.id]);
+        res.status(204).end();
+    } catch (error) { res.status(500).json({ message: "Unable to delete question." }); }
+};
+
+const deleteComment = async (req, res) => {
+    try {
+        const result = await pool.query("SELECT user_id FROM comments WHERE comment_id=$1", [req.params.id]);
+        if (!result.rows.length) return res.status(404).json({ message: "Reply not found." });
+        if (req.user.role !== "admin" && result.rows[0].user_id !== req.user.user_id) return res.status(403).json({ message: "You can only delete your own reply." });
+        await pool.query("DELETE FROM comments WHERE comment_id=$1", [req.params.id]);
+        res.status(204).end();
+    } catch (error) { res.status(500).json({ message: "Unable to delete reply." }); }
+};
+
 module.exports = {
 
     createPost,
     getAllPosts,
     getPostById,
-    createComment
+    createComment,
+    deletePost,
+    deleteComment
 
 };

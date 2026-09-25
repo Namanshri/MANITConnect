@@ -20,5 +20,8 @@ CREATE TABLE IF NOT EXISTS content_events (
 );
 CREATE INDEX IF NOT EXISTS content_events_item_idx ON content_events (item_type, item_id, event_type);
 
+-- Enables threaded community replies. Existing replies remain top-level.
+ALTER TABLE comments ADD COLUMN IF NOT EXISTS parent_comment_id INTEGER REFERENCES comments(comment_id) ON DELETE CASCADE;
+
 -- Create an admin only for a MANIT-controlled, already registered account:
 -- UPDATE users SET role = 'admin' WHERE email = 'administration@manit.ac.in';

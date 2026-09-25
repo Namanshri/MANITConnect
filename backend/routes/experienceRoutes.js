@@ -23,4 +23,6 @@ router.post(
 
 );
 
+router.delete("/:id", authenticateUser, authorizeRoles("mentor", "admin"), experienceController.deleteExperience);
+
 module.exports = router;

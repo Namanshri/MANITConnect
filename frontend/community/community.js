@@ -12,6 +12,12 @@ const postTitle = document.getElementById("postTitle");
 const postContent = document.getElementById("postContent");
 const postCategory = document.getElementById("postCategory");
 const postSubmitBtn = document.getElementById("postSubmitBtn");
+let isAdmin = false;
+
+getCurrentUser().then((user) => {
+    isAdmin = user?.role === "admin";
+    fetchPosts(searchBox.value.trim());
+});
 
 function timeAgo(dateString) {
 
@@ -90,6 +96,7 @@ function renderPosts(posts) {
                 <p class="post-preview">${preview}</p>
 
                 <div class="post-footer">
+                    ${isAdmin ? `<button class="admin-delete-post" type="button" data-post-id="${post.post_id}">Delete</button>` : ""}
                     <span>💬 ${post.reply_count} ${Number(post.reply_count) === 1 ? "reply" : "replies"}</span>
                     ${post.has_expert_answer ? `<span class="expert-badge">✓ Expert Answer</span>` : ""}
                 </div>
@@ -100,6 +107,19 @@ function renderPosts(posts) {
     });
 
 }
+
+postsFeed.addEventListener("click", async (event) => {
+    const button = event.target.closest(".admin-delete-post");
+    if (!button) return;
+    event.preventDefault();
+    if (!confirm("Delete this question and every reply? This cannot be undone.")) return;
+    button.disabled = true;
+    try {
+        const response = await fetch(`${BASE_URL}/api/posts/${button.dataset.postId}`, { method: "DELETE", credentials: "include" });
+        if (!response.ok) throw new Error();
+        fetchPosts(searchBox.value.trim());
+    } catch (_) { button.disabled = false; alert("Unable to delete this question."); }
+});
 
 let searchTimeout = null;
 
@@ -183,5 +203,3 @@ postSubmitBtn.addEventListener("click", async () => {
     }
 
 });
-
-fetchPosts();

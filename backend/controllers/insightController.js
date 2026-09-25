@@ -324,6 +324,14 @@ const recordView = async (req, res) => {
     } catch (error) { res.status(500).json({ message: "Unable to record view." }); }
 };
 
+const deleteInsight = async (req, res) => {
+    try {
+        const result = await pool.query(`DELETE FROM insights WHERE insight_id=$1 AND (mentor_id=(SELECT mentor_id FROM mentors WHERE user_id=$2) OR $3='admin') RETURNING insight_id`, [req.params.id, req.user.user_id, req.user.role]);
+        if (!result.rows.length) return res.status(403).json({ message: "You can only delete your own insight." });
+        res.status(204).end();
+    } catch (_) { res.status(500).json({ message: "Unable to delete insight." }); }
+};
+
 module.exports = {
 
     createInsight,
@@ -335,6 +343,7 @@ module.exports = {
     getInsightsByMentor,
 
     increaseHelpfulCount,
-    recordView
+    recordView,
+    deleteInsight
 
 };
