@@ -42,6 +42,12 @@ const toggleBookmark = async (req, res) => {
 
         );
 
+        await pool.query(
+            `INSERT INTO content_events (user_id, item_type, item_id, event_type)
+             VALUES ($1, $2, $3, 'bookmark')`,
+            [req.user.user_id, item_type, item_id]
+        );
+
         res.json({ bookmarked: true });
 
     }

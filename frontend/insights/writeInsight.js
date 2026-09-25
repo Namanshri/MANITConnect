@@ -7,7 +7,7 @@ const BASE_URL =
 /* Require a logged-in mentor. requireAuth() comes from shared/session.js —
    include that script BEFORE this one in writeInsight.html:
    <script src="../shared/session.js"></script> */
-requireAuth(["mentor"]);
+requireAuth(["mentor", "admin"]);
 
 const insightForm = document.getElementById("insightForm");
 

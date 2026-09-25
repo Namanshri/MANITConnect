@@ -226,3 +226,7 @@ categoryFilter.addEventListener("change", filterInsights);
 yearFilter.addEventListener("change", filterInsights);
 
 fetchInsights();
+
+getCurrentUser().then((user) => {
+    if (!user || !["mentor", "admin"].includes(user.role)) writeInsightBtn.style.display = "none";
+});

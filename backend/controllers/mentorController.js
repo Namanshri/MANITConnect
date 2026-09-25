@@ -115,7 +115,9 @@ const getAllMentors = async (req, res) => {
                 latest.placement_mode AS latest_placement_mode,
                 counts.experience_count
              FROM mentors
+             JOIN users ON users.user_id = mentors.user_id
              ${LATEST_JOURNEY_JOIN}
+             WHERE users.mentor_status = 'approved'
              ORDER BY mentors.mentor_id DESC`
 
         );
@@ -158,14 +160,16 @@ const searchMentors = async (req, res) => {
                 latest.placement_mode AS latest_placement_mode,
                 counts.experience_count
             FROM mentors
+            JOIN users ON users.user_id = mentors.user_id
             ${LATEST_JOURNEY_JOIN}
             WHERE
+                users.mentor_status = 'approved' AND (
                 mentors.full_name ILIKE $1
                 OR EXISTS (
                     SELECT 1 FROM experiences
                     WHERE experiences.mentor_id = mentors.mentor_id
                       AND (experiences.company ILIKE $1 OR experiences.role ILIKE $1)
-                )
+                ))
             ORDER BY mentors.mentor_id DESC
             `,
 
@@ -313,8 +317,9 @@ const getMentorById = async (req,res)=>{
 
         const mentor=await pool.query(
 
-            `SELECT * FROM mentors
-             WHERE mentor_id=$1`,
+            `SELECT mentors.* FROM mentors
+             JOIN users ON users.user_id = mentors.user_id
+             WHERE mentor_id=$1 AND users.mentor_status='approved'`,
 
             [id]
 

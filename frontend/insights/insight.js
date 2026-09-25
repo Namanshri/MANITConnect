@@ -57,6 +57,8 @@ async function fetchInsight() {
 
         currentInsight = await response.json();
 
+        fetch(`${BASE_URL}/api/insight/${insightId}/view`, { method: "POST", credentials: "include" }).catch(() => {});
+
         renderInsight();
 
         fetchRelatedInsights();

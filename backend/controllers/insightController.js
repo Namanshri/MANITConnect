@@ -314,6 +314,16 @@ const increaseHelpfulCount = async (req,res)=>{
 
 };
 
+const recordView = async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) return res.status(400).json({ message: "Invalid insight." });
+        await pool.query(`INSERT INTO content_events (user_id, item_type, item_id, event_type)
+            VALUES ($1, 'insight', $2, 'view')`, [req.user?.user_id || null, id]);
+        res.status(204).end();
+    } catch (error) { res.status(500).json({ message: "Unable to record view." }); }
+};
+
 module.exports = {
 
     createInsight,
@@ -324,6 +334,7 @@ module.exports = {
 
     getInsightsByMentor,
 
-    increaseHelpfulCount
+    increaseHelpfulCount,
+    recordView
 
 };

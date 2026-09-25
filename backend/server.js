@@ -59,6 +59,7 @@ const postRoutes = require("./routes/postRoutes");
 const bookmarkRoutes = require("./routes/bookmarkRoutes");
 
 const advisorRoutes = require("./routes/advisorRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 app.use("/api/mentor",mentorRoutes);
 
@@ -75,6 +76,7 @@ app.use("/api/posts", postRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 
 app.use("/api/advisor", advisorRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/",(req,res)=>{
 

@@ -246,7 +246,8 @@ const registerMentor = async (req,res)=>{
     password,
     role,
     is_verified,
-    verification_token
+    verification_token,
+    mentor_status
 )
 
 VALUES
@@ -257,7 +258,8 @@ VALUES
     $4,
     'mentor',
     false,
-    $5
+    $5,
+    'pending'
 )
 
 RETURNING user_id
@@ -474,7 +476,7 @@ const getMe = async (req, res) => {
 
         const result = await pool.query(
 
-            `SELECT user_id, full_name, email, role, is_verified
+            `SELECT user_id, full_name, email, role, is_verified, mentor_status
 
              FROM users WHERE user_id=$1`,
 

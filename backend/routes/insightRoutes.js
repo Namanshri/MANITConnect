@@ -13,6 +13,7 @@ const {
     getInsightsByMentor,
 
     increaseHelpfulCount
+    ,recordView
 
 
 } = require("../controllers/insightController");
@@ -20,6 +21,7 @@ const {
 const authenticateUser = require("../middleware/authMiddleware");
 
 const authorizeRoles = require("../middleware/authorizeRoles");
+const requireActiveMentor = require("../middleware/requireActiveMentor");
 
 /* CREATE INSIGHT — mentor only, mentor_id derived from the session */
 
@@ -29,11 +31,14 @@ router.post(
 
     authenticateUser,
 
-    authorizeRoles("mentor"),
+    authorizeRoles("mentor", "admin"),
+
+    (req, res, next) => req.user.role === "admin" ? next() : requireActiveMentor(req, res, next),
 
     createInsight
 
 );
+router.post("/:id/view", recordView);
 
 /* GET ALL INSIGHTS */
 

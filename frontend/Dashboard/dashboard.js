@@ -43,6 +43,7 @@ async function loadDashboard() {
         renderRecentMentors();
         loadFilterOptions();
         loadRecentInsights();
+        loadPlacementAlerts();
 
     }
 
@@ -52,6 +53,12 @@ async function loadDashboard() {
 
     }
 
+}
+
+function escapeHtml(value) { const element=document.createElement("div"); element.textContent=value || ""; return element.innerHTML; }
+async function loadPlacementAlerts() {
+    const container=document.getElementById("placementAlerts");
+    try { const response=await fetch(`${BASE_URL}/api/admin/placement-alerts`); if(!response.ok) throw new Error(); const alerts=await response.json(); container.innerHTML=alerts.length ? alerts.map(alert=>`<article class="placement-alert ${escapeHtml(alert.urgency)}"><div class="alert-meta"><span>${escapeHtml(alert.company || "MANIT placement cell")}</span><span class="alert-badge">${escapeHtml(alert.urgency)}</span></div><h3>${escapeHtml(alert.title)}</h3><p>${escapeHtml(alert.description)}</p>${alert.application_url ? `<a href="${encodeURI(alert.application_url)}" target="_blank" rel="noopener">View details →</a>` : ""}</article>`).join("") : "<p>No active placement alerts.</p>"; } catch (_) { container.innerHTML="<p>Placement alerts are unavailable right now.</p>"; }
 }
 
 async function loadFilterOptions() {

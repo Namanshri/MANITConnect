@@ -49,6 +49,7 @@ async function renderProfileMenu(containerId) {
             ${user.role === "mentor" ? `
             <a href="../contribute/contribute1.html" style="display:block; padding:12px 16px; color:#333; text-decoration:none; font-size:14px;">Share an Experience</a>
             <a href="../contribute/contribute2.html?mode=guidance" style="display:block; padding:12px 16px; color:#333; text-decoration:none; font-size:14px;">Share Guidance</a>` : ""}
+            ${user.role === "admin" ? `<a href="../admin/admin.html" style="display:block; padding:12px 16px; color:#333; text-decoration:none; font-size:14px;">Administration</a>` : ""}
             <a id="profileMenuLibrary" href="../library/library.html" style="
                 display:block; padding:12px 16px; color:#333; text-decoration:none; font-size:14px;
             ">📚 Your Library</a>
