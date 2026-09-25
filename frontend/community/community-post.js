@@ -55,6 +55,7 @@ async function loadPost() {
         const data = await response.json();
 
         const { post, comments } = data;
+        const replyAuthors = new Map(comments.map((comment) => [comment.comment_id, comment.author_name]));
 
         postDetail.innerHTML = `
             <div class="post-meta">
@@ -90,6 +91,7 @@ async function loadPost() {
                             ${isExpert ? `<span class="expert-badge">✓ Expert Answer</span>` : ""}
                             <span>· ${timeAgo(comment.created_at)}</span>
                         </div>
+                        ${comment.parent_comment_id ? `<p class="thread-context">↳ Replying to ${replyAuthors.get(comment.parent_comment_id) || "a deleted reply"}</p>` : ""}
                         <div class="reply-body">${comment.content}</div>
                         <div class="reply-actions"><button class="reply-to" data-comment-id="${comment.comment_id}" data-author="${comment.author_name}">Reply</button>${canDelete ? `<button class="admin-delete-comment" type="button" data-comment-id="${comment.comment_id}">Delete</button>` : ""}</div>
                     </div>

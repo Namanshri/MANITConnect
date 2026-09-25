@@ -98,6 +98,12 @@ body {
     border-radius: 7px; background: #fff; color: #c52f4b; cursor: pointer; font-size: 12px;
 }
 
+.reply-actions { display:flex; align-items:center; gap:10px; margin-top:12px; }
+.reply-actions button { margin:0; min-height:28px; padding:5px 9px; border-radius:7px; font:600 12px 'Inter',sans-serif; cursor:pointer; }
+.reply-actions .reply-to { border:0; background:transparent; color:#8a00ff; padding-left:0; }
+.reply-actions .admin-delete-comment { border:1px solid #efb7c2; background:#fff; color:#c52f4b; }
+.thread-context { color:#806c93; font-size:12px; margin:0 0 6px; }
+
 .post-detail .post-body {
     font-size: 15px;
     line-height: 1.7;
@@ -224,7 +230,7 @@ body {
 
 </div>
 
-<style>.reply-actions{display:flex;gap:10px;margin-top:12px}.reply-actions button,.replying-to button{border:0;background:transparent;color:#8a00ff;font-weight:600;cursor:pointer;padding:0}.reply-card.threaded{margin-left:34px;border-left:3px solid #e8d7ff}.admin-badge{background:#f1e3ff;color:#7917d8;border-radius:12px;padding:4px 8px;font-size:11px;font-weight:700}.replying-to{background:#faf5ff;border-left:3px solid #8a00ff;padding:8px 10px;font-size:12px;color:#65586f}</style>
+<style>.reply-card.threaded{margin-left:34px;border-left:3px solid #e8d7ff}.admin-badge{background:#f1e3ff;color:#7917d8;border-radius:12px;padding:4px 8px;font-size:11px;font-weight:700}.replying-to{background:#faf5ff;border-left:3px solid #8a00ff;padding:8px 10px;font-size:12px;color:#65586f}</style>
 
 <script src="../shared/session.js"></script>
 <script src="../shared/comingSoon.js"></script>
